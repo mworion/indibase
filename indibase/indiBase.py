@@ -487,7 +487,7 @@ class IndiBase(PyQt5.QtCore.QObject):
                                indiXML.SetTextVector,
                                indiXML.SetLightVector,
                                indiXML.SetNumberVector,
-                               # indiXML.DefBLOBVector,
+                               indiXML.DefBLOBVector,
                                indiXML.DefSwitchVector,
                                indiXML.DefTextVector,
                                indiXML.DefLightVector,
@@ -522,8 +522,9 @@ class IndiBase(PyQt5.QtCore.QObject):
                 self.devices[device][vector] = {}
             for elemAttr in elem.attr:
                 self.devices[device][vector][elemAttr] = elem.attr.get(elemAttr)
-            for elt in elem.elt_list:
-                self.devices[device][vector][elt.attr['name']] = elt.getValue()
+            if not isinstance(elem, indiXML.DefBLOBVector):
+                for elt in elem.elt_list:
+                    self.devices[device][vector][elt.attr['name']] = elt.getValue()
 
     @PyQt5.QtCore.pyqtSlot()
     def _handleReadyRead(self):
