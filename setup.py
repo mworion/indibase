@@ -1,7 +1,6 @@
 # from distutils.core import setup
 from setuptools import setup
 import indibase.indiBase
-import platform
 
 setup(
     name='indibase',
