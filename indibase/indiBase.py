@@ -38,15 +38,30 @@ class IndiBase(PyQt5.QtCore.QObject):
     """
 
     __all__ = ['IndiBase',
+               'version',
                'setServer',
                'watchDevice',
                'connectServer',
                'disconnectServer',
                'isServerConnected',
+               'connectDevice',
+               'disconnectDevice',
                'getDevice',
                'getDevices',
+               'setBlobMode',
+               'getBlobMode',
+               'getHost',
+               'getPort',
+               'sendNewText',
+               'sendNewNumber',
+               'sendNewSwitch',
+               'startBlob',
+               'sendOneBlob',
+               'finishBlob',
+               'setVerbose',
+               'isVerbose',
+               'setConnectionTimeout'
                'sendCmd',
-               'version',
                ]
 
     version = '0.1'
@@ -279,6 +294,10 @@ class IndiBase(PyQt5.QtCore.QObject):
         """
         Part of BASE CLIENT API of EKOS
 
+        :param deviceName:
+        :param propertyName:
+        :param elementName:
+        :param text:
         :return: success for test
         """
         cmd = indiXML.newTextVector([indiXML.oneText(text,
@@ -293,6 +312,10 @@ class IndiBase(PyQt5.QtCore.QObject):
         """
         Part of BASE CLIENT API of EKOS
 
+        :param deviceName:
+        :param propertyName:
+        :param elementName:
+        :param value:
         :return: success for test
         """
 
@@ -308,6 +331,9 @@ class IndiBase(PyQt5.QtCore.QObject):
         """
         Part of BASE CLIENT API of EKOS
 
+        :param deviceName:
+        :param propertyName:
+        :param elementName:
         :return: success for test
         """
 
