@@ -135,18 +135,18 @@ class IndiBase(PyQt5.QtCore.QObject):
         self.host = (host, port)
         return True
 
-    def watchDevice(self, device=''):
+    def watchDevice(self, deviceName=''):
         """
         Part of BASE CLIENT API of EKOS
         adds a device to the watchlist. if the device name is empty, all traffic for all
         devices will be watched and therefore received
 
-        :param device: device name
+        :param deviceName: device name
         :return: success for test purpose
         """
-        data = indiXML.clientGetProperties(indi_attr={'version': '1.7',
-                                                      'device': device})
-        self.sendCmd(data)
+        cmd = indiXML.clientGetProperties(indi_attr={'version': '1.7',
+                                                     'device': deviceName})
+        self.sendCmd(cmd)
         return True
 
     def connectServer(self):
@@ -191,6 +191,32 @@ class IndiBase(PyQt5.QtCore.QObject):
         """
 
         return self.isConnected
+
+    def connectDevice(self, deviceName):
+        """
+        Part of BASE CLIENT API of EKOS
+
+        :return: success
+        """
+
+        self.sendNewSwitch(deviceName=deviceName,
+                           propertyName='CONNECTION',
+                           elementName='CONNECT',
+                           )
+        return True
+
+    def disconnectDevice(self, deviceName):
+        """
+        Part of BASE CLIENT API of EKOS
+
+        :return: success
+        """
+
+        self.sendNewSwitch(deviceName=deviceName,
+                           propertyName='CONNECTION',
+                           elementName='DISCONNECT',
+                           )
+        return True
 
     def getDevice(self, device):
         """
@@ -249,29 +275,49 @@ class IndiBase(PyQt5.QtCore.QObject):
         """
         return self._host[1]
 
-    def sendNewText(self, deviceName, propertyName, elementName, text):
+    def sendNewText(self, deviceName='', propertyName='', elementName='', text=''):
         """
         Part of BASE CLIENT API of EKOS
 
-        :return:
+        :return: success for test
         """
-        pass
+        cmd = indiXML.newTextVector([indiXML.oneText(text,
+                                                     indi_attr={'name': elementName})
+                                     ],
+                                    indi_attr={'name': propertyName,
+                                               'device': deviceName})
+        self.sendCmd(cmd)
+        return True
 
-    def sendNewNumber(self, deviceName, propertyName, elementName, value):
+    def sendNewNumber(self, deviceName='', propertyName='', elementName='', value=0):
         """
         Part of BASE CLIENT API of EKOS
 
-        :return:
+        :return: success for test
         """
-        pass
 
-    def sendNewSwitch(self, deviceName, propertyName, elementName):
+        cmd = indiXML.newNumberVector([indiXML.oneNumber(value,
+                                                         indi_attr={'name': elementName})
+                                       ],
+                                      indi_attr={'name': propertyName,
+                                                 'device': deviceName})
+        self.sendCmd(cmd)
+        return True
+
+    def sendNewSwitch(self, deviceName='', propertyName='', elementName=''):
         """
         Part of BASE CLIENT API of EKOS
 
-        :return:
+        :return: success for test
         """
-        pass
+
+        cmd = indiXML.newSwitchVector([indiXML.oneSwitch('On',
+                                                         indi_attr={'name': elementName})
+                                       ],
+                                      indi_attr={'name': propertyName,
+                                                 'device': deviceName})
+        self.sendCmd(cmd)
+        return True
 
     def startBlob(self, deviceName, propertyName, timestamp):
         """
@@ -333,6 +379,7 @@ class IndiBase(PyQt5.QtCore.QObject):
         if self.isConnected:
             self.socket.write(indiCommand.toXML() + b'\n')
             self.socket.flush()
+            print(indiCommand.toXML())
 
     def _getDriverInterface(self, device):
         """
@@ -401,8 +448,6 @@ class IndiBase(PyQt5.QtCore.QObject):
                                indiXML.SetNumberVector,
                                )
                         ):
-            if device not in self.devices:
-                return False
             if 'name' not in elem.attr:
                 return False
             setVector = elem.attr['name']
@@ -426,8 +471,6 @@ class IndiBase(PyQt5.QtCore.QObject):
                                indiXML.DefNumberVector,
                                )
                         ):
-            if device not in self.devices:
-                return False
             if 'name' not in elem.attr:
                 return False
             defVector = elem.attr['name']
