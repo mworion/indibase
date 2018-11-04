@@ -1,13 +1,8 @@
 ############################################################
 # -*- coding: utf-8 -*-
 #
-#       #   #  #   #   #    #
-#      ##  ##  #  ##  #    #
-#     # # # #  # # # #    #  #
-#    #  ##  #  ##  ##    ######
-#   #   #   #  #   #       #
+# INDIBASE
 #
-# Python-based Tool for interaction with the 10micron mounts
 # GUI with PyQT5 for python
 # Python  v3.6.5
 #

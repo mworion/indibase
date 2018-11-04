@@ -1,13 +1,8 @@
 ############################################################
 # -*- coding: utf-8 -*-
 #
-#       #   #  #   #   #    #
-#      ##  ##  #  ##  #    #
-#     # # # #  # # # #    #  #
-#    #  ##  #  ##  ##    ######
-#   #   #   #  #   #       #
+# INDIBASE
 #
-# Python-based Tool for interaction with the 10micron mounts
 # GUI with PyQT5 for python
 # Python  v3.6.5
 #
@@ -24,8 +19,8 @@ import logging
 import PyQt5
 import PyQt5.QtWidgets
 # local import
-from mw4.indi import indiBase
-from mw4.indi import indiXML
+from indibase import indiBase
+from indibase import indiXML
 
 
 class TestQtIndi(PyQt5.QtWidgets.QWidget):
