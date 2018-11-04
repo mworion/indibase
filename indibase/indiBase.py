@@ -88,6 +88,7 @@ class IndiBase(PyQt5.QtCore.QObject):
 
         self.isConnected = False
         self.devices = dict()
+        self.curDepth = 0
         self.socket = PyQt5.QtNetwork.QTcpSocket()
         self.socket.readyRead.connect(self._handleReadyRead)
         self.socket.error.connect(self._handleError)
@@ -96,12 +97,6 @@ class IndiBase(PyQt5.QtCore.QObject):
         # clear the event queue of parser
         for _, _ in self.parser.read_events():
             pass
-
-        # link signals
-        self.newDevice.connect(self.logNewDevice)
-        self.newProperty.connect(self.logNewProperty)
-        self.delProperty.connect(self.logDelProperty)
-        self.newVector.connect(self.logNewVector)
 
     @property
     def host(self):
@@ -168,8 +163,9 @@ class IndiBase(PyQt5.QtCore.QObject):
 
     def _clearDevices(self):
         for device in self.devices:
-            del self.devices[device]
+            self.devices[device] = {}
             self.delDevice.emit(device)
+        self.devices = {}
 
     def _dispatchCmd(self, elem):
         elem = indiXML.parseETree(elem)
