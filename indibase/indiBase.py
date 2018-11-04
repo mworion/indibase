@@ -70,7 +70,7 @@ class IndiBase(PyQt5.QtCore.QObject):
     # timeout for client to server
     CONNECTION_TIMEOUT = 2000
 
-    # signals
+    # signals for interfacing the indi client
     newDevice = PyQt5.QtCore.pyqtSignal(str)
     delDevice = PyQt5.QtCore.pyqtSignal(str)
     newProperty = PyQt5.QtCore.pyqtSignal(str)
