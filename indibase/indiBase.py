@@ -121,6 +121,15 @@ class IndiBase(PyQt5.QtCore.QObject):
         self._host = value
 
     def connect(self, device=''):
+        """
+        connect starts the link to the indi server. if a device name is given, the
+        connection watching is limited to the given device. otherwise all traffic will be
+        received
+
+        :param device: device name
+        :return: success
+        """
+
         if self.isConnected:
             return True
         self.socket.connectToHost(*self._host)
@@ -135,15 +144,67 @@ class IndiBase(PyQt5.QtCore.QObject):
         return True
 
     def disconnect(self):
+        """
+        disconnect drops the connection to the indi server
+
+        :return: success
+        """
+
         if not self.isConnected:
             return True
-        self.socket.close()
         self.isConnected = False
+        self.socket.close()
         self._clearDevices()
         self.disconnected.emit()
         return True
 
+    def getDevice(self, device):
+        """
+        getDevice collects all the data of the given device
+
+        :param device: name of device
+        :return: dict with data of that give device
+        """
+
+        return self.devices[device]
+
+    def getDevices(self, driverInterface):
+        """
+        getDevices generates a list of devices, which are from type of the given
+        driver interface type.
+
+        :param driverInterface: binary value of driver interface type
+        :return: list of knows devices of this type
+        """
+
+        deviceList = list()
+        for device in self.devices:
+            if self._getDriverInterface(device) & driverInterface:
+                deviceList.append(device)
+        return deviceList
+
+    def sendCmd(self, indiCommand):
+        """
+        sendCmd take an XML indi command, converts it and sends it over the network and
+        flushes the buffer
+
+        :param indiCommand: XML command to send
+        :return: nothing
+        """
+
+        if self.isConnected:
+            self.socket.write(indiCommand.toXML() + b'\n')
+            self.socket.flush()
+
     def _getDriverInterface(self, device):
+        """
+        _getDriverInterface look the type of the device's driver interface up and gives
+        it back as binary value.
+
+        :param device: device name
+        :return: binary value of type of device drivers interface
+        """
+
         val = self.devices[device].get('DRIVER_INFO', '')
         if val:
             interface = self.devices[device]['DRIVER_INFO'].get('DRIVER_INTERFACE', '')
@@ -151,23 +212,29 @@ class IndiBase(PyQt5.QtCore.QObject):
         else:
             return 0
 
-    def getDevice(self, device):
-        return self.devices[device]
-
-    def getDevices(self, driverInterface):
-        deviceList = list()
-        for device in self.devices:
-            if self._getDriverInterface(device) & driverInterface:
-                deviceList.append(device)
-        return deviceList
-
     def _clearDevices(self):
+        """
+        _clearDevices deletes all the actual knows devices and sens out the appropriate
+        qt signals
+
+        :return: success for test purpose
+        """
+
         for device in self.devices:
             self.devices[device] = {}
             self.delDevice.emit(device)
         self.devices = {}
+        return True
 
     def _dispatchCmd(self, elem):
+        """
+        _dispatchCmd parses the incoming indi XL data and builds up a dictionary which
+        holds all the data.
+
+        :param elem: raw indi XML element
+        :return: success if it could be parsed
+        """
+
         elem = indiXML.parseETree(elem)
         if 'device' not in elem.attr:
             self.logger.error('No device in elem: {0}'.format(elem))
@@ -241,6 +308,15 @@ class IndiBase(PyQt5.QtCore.QObject):
 
     @PyQt5.QtCore.pyqtSlot()
     def _handleReadyRead(self):
+        """
+        _handleReadyRead gets the date in buffer signal and starts to read data from the
+        network. as long as data is streaming, it feeds to the xml parser. with this
+        construct you don't have to put the whole data set into the parser at once, but
+        doing the work step be step.
+
+        :return: nothing
+        """
+
         buf = self.socket.readAll()
         self.parser.feed(buf)
         for event, elem in self.parser.read_events():
@@ -258,12 +334,13 @@ class IndiBase(PyQt5.QtCore.QObject):
 
     @PyQt5.QtCore.pyqtSlot(PyQt5.QtNetwork.QAbstractSocket.SocketError)
     def _handleError(self, socketError):
+        """
+        _handleError log all network errors in case of problems.
+        :param socketError: the error from socket library
+        :return: nothing
+        """
+
         if not self.isConnected:
             return
         self.logger.warning('INDI client connection fault, error: {0}'.format(socketError))
         self.socket.close()
-
-    def sendCmd(self, indiCommand):
-        if self.socket:
-            self.socket.write(indiCommand.toXML() + b'\n')
-            self.socket.flush()
