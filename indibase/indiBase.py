@@ -90,12 +90,21 @@ class IndiBase(PyQt5.QtCore.QObject):
 
     # signals for interfacing the indi client
     newDevice = PyQt5.QtCore.pyqtSignal(str)
-    delDevice = PyQt5.QtCore.pyqtSignal(str)
+    removeDevice = PyQt5.QtCore.pyqtSignal(str)
     newProperty = PyQt5.QtCore.pyqtSignal(str)
-    delProperty = PyQt5.QtCore.pyqtSignal(str)
-    newVector = PyQt5.QtCore.pyqtSignal(str)
-    connected = PyQt5.QtCore.pyqtSignal()
-    disconnected = PyQt5.QtCore.pyqtSignal()
+    removeProperty = PyQt5.QtCore.pyqtSignal(str)
+    newBLOB = PyQt5.QtCore.pyqtSignal(str)
+    newSwitch = PyQt5.QtCore.pyqtSignal(str)
+    newNumber = PyQt5.QtCore.pyqtSignal(str)
+    newText = PyQt5.QtCore.pyqtSignal(str)
+    newLight = PyQt5.QtCore.pyqtSignal(str)
+    newMessage = PyQt5.QtCore.pyqtSignal(str)
+    serverConnected = PyQt5.QtCore.pyqtSignal()
+    serverDisconnected = PyQt5.QtCore.pyqtSignal()
+
+    # signal to type mapping
+
+    mapping = {}
 
     def __init__(self,
                  host=None,
@@ -104,7 +113,8 @@ class IndiBase(PyQt5.QtCore.QObject):
 
         self.host = host
 
-        self.isConnected = False
+        self.connected = False
+        self.verbose = False
         self.devices = dict()
         self.curDepth = 0
         self.socket = PyQt5.QtNetwork.QTcpSocket()
@@ -172,14 +182,14 @@ class IndiBase(PyQt5.QtCore.QObject):
         :return: success
         """
 
-        if self.isConnected:
+        if self.connected:
             return True
         self.socket.connectToHost(*self._host)
         if not self.socket.waitForConnected(self.CONNECTION_TIMEOUT):
-            self.isConnected = False
+            self.connected = False
             return False
-        self.isConnected = True
-        self.connected.emit()
+        self.connected = True
+        self.serverConnected.emit()
         return True
 
     def disconnectServer(self):
@@ -190,12 +200,12 @@ class IndiBase(PyQt5.QtCore.QObject):
         :return: success
         """
 
-        if not self.isConnected:
+        if not self.connected:
             return True
-        self.isConnected = False
+        self.connected = False
         self.socket.close()
         self._clearDevices()
-        self.disconnected.emit()
+        self.serverDisconnected.emit()
         return True
 
     def isServerConnected(self):
@@ -205,7 +215,7 @@ class IndiBase(PyQt5.QtCore.QObject):
         :return: true if server connected
         """
 
-        return self.isConnected
+        return self.connected
 
     def connectDevice(self, deviceName):
         """
@@ -375,15 +385,17 @@ class IndiBase(PyQt5.QtCore.QObject):
 
         :return:
         """
-        pass
+
+        self.verbose = bool(status)
 
     def isVerbose(self):
         """
         Part of BASE CLIENT API of EKOS
 
-        :return:
+        :return: status of verbose
         """
-        pass
+
+        return self.verbose
 
     def setConnectionTimeout(self, seconds=2, microseconds=0):
         """
@@ -402,9 +414,10 @@ class IndiBase(PyQt5.QtCore.QObject):
         :return: nothing
         """
 
-        if self.isConnected:
+        if self.connected:
             self.socket.write(indiCommand.toXML() + b'\n')
             self.socket.flush()
+        if self.verbose:
             print(indiCommand.toXML())
 
     def _getDriverInterface(self, device):
@@ -433,7 +446,7 @@ class IndiBase(PyQt5.QtCore.QObject):
 
         for device in self.devices:
             self.devices[device] = {}
-            self.delDevice.emit(device)
+            self.removeDevice.emit(device)
         self.devices = {}
         return True
 
@@ -447,6 +460,8 @@ class IndiBase(PyQt5.QtCore.QObject):
         """
 
         elem = indiXML.parseETree(elem)
+        if self.verbose:
+            print(elem)
         if 'device' not in elem.attr:
             self.logger.error('No device in elem: {0}'.format(elem))
             return False
@@ -465,33 +480,15 @@ class IndiBase(PyQt5.QtCore.QObject):
             delVector = elem.attr['name']
             if delVector in self.devices[device]:
                 del self.devices[device][delVector]
-                self.delProperty.emit(delVector)
+                self.removeProperty.emit(delVector)
 
-        # receiving changes from vectors and updating them them up in self.devices
-        elif isinstance(elem, (indiXML.SetSwitchVector,
+        elif isinstance(elem, (indiXML.SetBLOBVector,
+                               indiXML.SetSwitchVector,
                                indiXML.SetTextVector,
                                indiXML.SetLightVector,
                                indiXML.SetNumberVector,
-                               )
-                        ):
-            if 'name' not in elem.attr:
-                return False
-            setVector = elem.attr['name']
-            self.newVector.emit(setVector)
-            if setVector not in self.devices[device]:
-                self.devices[device][setVector] = {}
-            self.devices[device][setVector]['label'] = elem.attr.get('label', '')
-            self.devices[device][setVector]['group'] = elem.attr.get('group', '')
-            self.devices[device][setVector]['state'] = elem.attr.get('state', '')
-            self.devices[device][setVector]['perm'] = elem.attr.get('perm', '')
-            self.devices[device][setVector]['timeout'] = elem.attr.get('timeout', '')
-            self.devices[device][setVector]['timestamp'] = elem.attr.get('timestamp', '')
-            self.devices[device][setVector]['message'] = elem.attr.get('message', '')
-            for elt in elem.elt_list:
-                self.devices[device][setVector][elt.attr['name']] = elt.getValue()
-
-        # receiving all definitions for vectors in indi and building them up in self.devices
-        elif isinstance(elem, (indiXML.DefSwitchVector,
+                               # indiXML.DefBLOBVector,
+                               indiXML.DefSwitchVector,
                                indiXML.DefTextVector,
                                indiXML.DefLightVector,
                                indiXML.DefNumberVector,
@@ -499,19 +496,34 @@ class IndiBase(PyQt5.QtCore.QObject):
                         ):
             if 'name' not in elem.attr:
                 return False
-            defVector = elem.attr['name']
-            self.newProperty.emit(defVector)
-            if defVector not in self.devices[device]:
-                self.devices[device][defVector] = {}
-            self.devices[device][defVector]['label'] = elem.attr.get('label', '')
-            self.devices[device][defVector]['group'] = elem.attr.get('group', '')
-            self.devices[device][defVector]['state'] = elem.attr.get('state', '')
-            self.devices[device][defVector]['perm'] = elem.attr.get('perm', '')
-            self.devices[device][defVector]['timeout'] = elem.attr.get('timeout', '')
-            self.devices[device][defVector]['timestamp'] = elem.attr.get('timestamp', '')
-            self.devices[device][defVector]['message'] = elem.attr.get('message', '')
+            vector = elem.attr['name']
+            if isinstance(elem, (indiXML.DefBLOBVector,
+                                 indiXML.DefSwitchVector,
+                                 indiXML.DefTextVector,
+                                 indiXML.DefLightVector,
+                                 indiXML.DefNumberVector,
+                                 )
+                          ):
+                self.newProperty.emit(vector)
+            elif isinstance(elem, indiXML.SetBLOBVector):
+                self.newBLOB.emit(vector)
+            elif isinstance(elem, indiXML.SetSwitchVector):
+                self.newSwitch.emit(vector)
+            elif isinstance(elem, indiXML.SetNumberVector):
+                self.newNumber.emit(vector)
+            elif isinstance(elem, indiXML.SetTextVector):
+                self.newText.emit(vector)
+            elif isinstance(elem, indiXML.SetLightVector):
+                self.newLight.emit(vector)
+            elif isinstance(elem, indiXML.SetMessageVector):
+                self.newMessage.emit(vector)
+
+            if vector not in self.devices[device]:
+                self.devices[device][vector] = {}
+            for elemAttr in elem.attr:
+                self.devices[device][vector][elemAttr] = elem.attr.get(elemAttr)
             for elt in elem.elt_list:
-                self.devices[device][defVector][elt.attr['name']] = elt.getValue()
+                self.devices[device][vector][elt.attr['name']] = elt.getValue()
 
     @PyQt5.QtCore.pyqtSlot()
     def _handleReadyRead(self):
@@ -547,7 +559,7 @@ class IndiBase(PyQt5.QtCore.QObject):
         :return: nothing
         """
 
-        if not self.isConnected:
+        if not self.connected:
             return
         self.logger.warning('INDI client connection fault, error: {0}'.format(socketError))
         self.socket.close()
