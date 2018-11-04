@@ -20,7 +20,7 @@ import PyQt5
 import PyQt5.QtNetwork
 import xml.etree.ElementTree
 # local import
-from mw4.indi import indiXML
+from indibase import indiXML
 
 
 class IndiBase(PyQt5.QtCore.QObject):
