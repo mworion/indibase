@@ -9,6 +9,6 @@ There might be some alternative mor pythonic methods to do the same, but
 it is open to you, what you would like to use. Basically the results
 should be identically.
 
-Please use it on you own risk.
+Please use it at you own risk.
 
 Michel
