@@ -13,8 +13,7 @@ setup(
         'PyQt5==5.11.3',
         'PyQt5-sip==4.19.13',
         'numpy==1.15.3',
-    ]
-    ,
+    ],
     url='https://github.com/mworion/indibase',
     license='APL 2.0',
     author='mw',
