@@ -12,6 +12,7 @@ setup(
     python_requires='~=3.6.5',
     install_requires=[
         'PyQt5==5.11.3',
+        'PyQt5-sip==4.19.13',
         'numpy==1.15.3',
     ]
     ,
