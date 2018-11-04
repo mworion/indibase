@@ -67,7 +67,7 @@ class IndiBase(PyQt5.QtCore.QObject):
 
     # default port indi servers
     DEFAULT_PORT = 7624
-    # timeout for server
+    # timeout for client to server
     CONNECTION_TIMEOUT = 2000
 
     # signals
