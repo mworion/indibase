@@ -38,10 +38,13 @@ class IndiBase(PyQt5.QtCore.QObject):
     """
 
     __all__ = ['IndiBase',
+               'setServer',
+               'watchDevice',
+               'connectServer',
+               'disconnectServer',
+               'isServerConnected',
                'getDevice',
                'getDevices',
-               'connect',
-               'disconnect',
                'sendCmd',
                'version',
                ]
@@ -120,13 +123,23 @@ class IndiBase(PyQt5.QtCore.QObject):
         value = self.checkFormat(value)
         self._host = value
 
-    def connect(self, device=''):
+    def setServer(self, host='', port=0):
         """
-        connect starts the link to the indi server. if a device name is given, the
-        connection watching is limited to the given device. otherwise all traffic will be
-        received
+        Part of BASE CLIENT API of EKOS
+        setServer sets the server address of the indi server
 
-        :param device: device name
+        :param host: host name as string
+        :param port: port as int
+        :return: success for test purpose
+        """
+        self.host = (host, port)
+        return True
+
+    def connectServer(self):
+        """
+        Part of BASE CLIENT API of EKOS
+        connect starts the link to the indi server.
+
         :return: success
         """
 
@@ -137,14 +150,12 @@ class IndiBase(PyQt5.QtCore.QObject):
             self.isConnected = False
             return False
         self.isConnected = True
-        data = indiXML.clientGetProperties(indi_attr={'version': '1.7',
-                                                      'device': device})
-        self.sendCmd(data)
         self.connected.emit()
         return True
 
-    def disconnect(self):
+    def disconnectServer(self):
         """
+        Part of BASE CLIENT API of EKOS
         disconnect drops the connection to the indi server
 
         :return: success
@@ -156,6 +167,29 @@ class IndiBase(PyQt5.QtCore.QObject):
         self.socket.close()
         self._clearDevices()
         self.disconnected.emit()
+        return True
+
+    def isServerConnected(self):
+        """
+        Part of BASE CLIENT API of EKOS
+
+        :return: true if server connected
+        """
+
+        return self.isConnected
+
+    def watchDevice(self, device=''):
+        """
+        Part of BASE CLIENT API of EKOS
+        adds a device to the watchlist. if the device name is empty, all traffic for all
+        devices will be watched and therefore received
+
+        :param device: device name
+        :return: success for test purpose
+        """
+        data = indiXML.clientGetProperties(indi_attr={'version': '1.7',
+                                                      'device': device})
+        self.sendCmd(data)
         return True
 
     def getDevice(self, device):
