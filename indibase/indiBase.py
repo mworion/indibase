@@ -276,12 +276,25 @@ class IndiBase(PyQt5.QtCore.QObject):
                 deviceList.append(device)
         return deviceList
 
-    def setBlobMode(self):
+    def setBlobMode(self, blobHandling, deviceName, propertyName=None):
         """
         Part of BASE CLIENT API of EKOS
 
+        :param blobHandling:
+        :param deviceName:
+        :param propertyName:
         :return: true if server connected
         """
+        # todo where is set blobe mode
+        cmd = indiXML.enableBLOB([indiXML.oneText(blobHandling,
+                                                     indi_attr={'name': elementName})
+                                     ],
+                                    indi_attr={'name': propertyName,
+                                               'device': deviceName})
+        self.sendCmd(cmd)
+        return True
+
+        indiXML.enableBLOB('Also', indi_attr={'device': self.app.workerINDI.cameraDevice}))
         pass
 
     def getBlobMode(self):
