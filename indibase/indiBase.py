@@ -16,11 +16,34 @@
 import logging
 import base64
 # external packages
-import PyQt5
+import PyQt5.QtCore
 import PyQt5.QtNetwork
 import xml.etree.ElementTree
 # local import
 from indibase import indiXML
+
+
+class INDISignals(PyQt5.QtCore.QObject):
+    """
+    The INDISignals class offers a list of signals to be used and instantiated by the
+    IndiBase class to get signals for indi events.
+    """
+
+    __all__ = ['INDISignals']
+    version = '0.1'
+
+    newDevice = PyQt5.QtCore.pyqtSignal(str)
+    removeDevice = PyQt5.QtCore.pyqtSignal(str)
+    newProperty = PyQt5.QtCore.pyqtSignal(str)
+    removeProperty = PyQt5.QtCore.pyqtSignal(str)
+    newBLOB = PyQt5.QtCore.pyqtSignal(str)
+    newSwitch = PyQt5.QtCore.pyqtSignal(str)
+    newNumber = PyQt5.QtCore.pyqtSignal(str)
+    newText = PyQt5.QtCore.pyqtSignal(str)
+    newLight = PyQt5.QtCore.pyqtSignal(str)
+    newMessage = PyQt5.QtCore.pyqtSignal(str)
+    serverConnected = PyQt5.QtCore.pyqtSignal()
+    serverDisconnected = PyQt5.QtCore.pyqtSignal()
 
 
 class IndiBase(PyQt5.QtCore.QObject):
@@ -88,38 +111,23 @@ class IndiBase(PyQt5.QtCore.QObject):
     # timeout for client to server
     CONNECTION_TIMEOUT = 2000
 
-    # signals for interfacing the indi client
-    newDevice = PyQt5.QtCore.pyqtSignal(str)
-    removeDevice = PyQt5.QtCore.pyqtSignal(str)
-    newProperty = PyQt5.QtCore.pyqtSignal(str)
-    removeProperty = PyQt5.QtCore.pyqtSignal(str)
-    newBLOB = PyQt5.QtCore.pyqtSignal(str)
-    newSwitch = PyQt5.QtCore.pyqtSignal(str)
-    newNumber = PyQt5.QtCore.pyqtSignal(str)
-    newText = PyQt5.QtCore.pyqtSignal(str)
-    newLight = PyQt5.QtCore.pyqtSignal(str)
-    newMessage = PyQt5.QtCore.pyqtSignal(str)
-    serverConnected = PyQt5.QtCore.pyqtSignal()
-    serverDisconnected = PyQt5.QtCore.pyqtSignal()
-
-    # signal to type mapping
-
-    mapping = {}
-
     def __init__(self,
                  host=None,
                  ):
         super().__init__()
-
+        # parameters
         self.host = host
-
+        # instance variables
+        self.signals = INDISignals()
         self.connected = False
         self.verbose = False
         self.devices = dict()
         self.curDepth = 0
+        # tcp handling
         self.socket = PyQt5.QtNetwork.QTcpSocket()
         self.socket.readyRead.connect(self._handleReadyRead)
         self.socket.error.connect(self._handleError)
+        # XML parser
         self.parser = xml.etree.ElementTree.XMLPullParser(['start', 'end'])
         self.parser.feed('<root>')
         # clear the event queue of parser
@@ -446,7 +454,7 @@ class IndiBase(PyQt5.QtCore.QObject):
 
         for device in self.devices:
             self.devices[device] = {}
-            self.removeDevice.emit(device)
+            self.signals.removeDevice.emit(device)
         self.devices = {}
         return True
 
@@ -469,7 +477,7 @@ class IndiBase(PyQt5.QtCore.QObject):
         device = elem.attr['device']
         if device not in self.devices:
             self.devices[device] = {}
-            self.newDevice.emit(device)
+            self.signals.newDevice.emit(device)
 
         # deleting properties from devices
         if isinstance(elem, indiXML.DelProperty):
@@ -480,7 +488,7 @@ class IndiBase(PyQt5.QtCore.QObject):
             delVector = elem.attr['name']
             if delVector in self.devices[device]:
                 del self.devices[device][delVector]
-                self.removeProperty.emit(delVector)
+                self.signals.removeProperty.emit(delVector)
 
         elif isinstance(elem, (indiXML.SetBLOBVector,
                                indiXML.SetSwitchVector,
@@ -506,17 +514,17 @@ class IndiBase(PyQt5.QtCore.QObject):
                           ):
                 self.newProperty.emit(vector)
             elif isinstance(elem, indiXML.SetBLOBVector):
-                self.newBLOB.emit(vector)
+                self.signals.newBLOB.emit(vector)
             elif isinstance(elem, indiXML.SetSwitchVector):
-                self.newSwitch.emit(vector)
+                self.signals.newSwitch.emit(vector)
             elif isinstance(elem, indiXML.SetNumberVector):
-                self.newNumber.emit(vector)
+                self.signals.newNumber.emit(vector)
             elif isinstance(elem, indiXML.SetTextVector):
-                self.newText.emit(vector)
+                self.signals.newText.emit(vector)
             elif isinstance(elem, indiXML.SetLightVector):
-                self.newLight.emit(vector)
+                self.signals.newLight.emit(vector)
             elif isinstance(elem, indiXML.SetMessageVector):
-                self.newMessage.emit(vector)
+                self.signals.newMessage.emit(vector)
 
             if vector not in self.devices[device]:
                 self.devices[device][vector] = {}
