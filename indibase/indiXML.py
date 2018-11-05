@@ -14,8 +14,19 @@
 ###########################################################
 #
 # original written by Hazen Babcock -> https://github.com/HazenBabcock/indi-python
+# approved to be used with APL2.0 license via email from 04.11.2018:
+#
+# Hello Michael,
+#
+# No problem, you are welcome to use/re-use it in your code with an APL2.0
+# license. I'm glad to hear that you found it useful.
+#
+# best,
+# -Hazen
+#
 # based of the INDI protocol stack version 1.7
 #
+###########################################################
 # standard libraries
 import logging
 import base64
