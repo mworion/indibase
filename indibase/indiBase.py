@@ -46,7 +46,7 @@ class INDISignals(PyQt5.QtCore.QObject):
     serverDisconnected = PyQt5.QtCore.pyqtSignal()
 
 
-class IndiBase(PyQt5.QtCore.QObject):
+class Client(PyQt5.QtCore.QObject):
     """
     IndiBase implements an INDI Base Client for INDI servers. it rely on PyQt5 and it's
     signalling scheme. there might be not all capabilities implemented right now. all
@@ -54,13 +54,13 @@ class IndiBase(PyQt5.QtCore.QObject):
     The reading and parsing of the XML data is done in a streaming way, so for xml the
     xml.parse.feed() mechanism is used.
 
-        >>> iniClient = IndiBase(
-        >>>                         host=host
+        >>> indiClient = Client(
+        >>>                     host=host
         >>>                     )
 
     """
 
-    __all__ = ['IndiBase',
+    __all__ = ['Client',
                'version',
                'setServer',
                'watchDevice',
@@ -277,7 +277,7 @@ class IndiBase(PyQt5.QtCore.QObject):
                 deviceList.append(device)
         return deviceList
 
-    def setBlobMode(self, blobHandling='Never', deviceName='', propertyName=None):
+    def setBlobMode(self, blobHandling='Never', deviceName='', propertyName=''):
         """
         Part of BASE CLIENT API of EKOS
 
@@ -288,7 +288,8 @@ class IndiBase(PyQt5.QtCore.QObject):
         """
 
         cmd = indiXML.enableBLOB(blobHandling,
-                                 indi_attr={'device': deviceName})
+                                 indi_attr={'name': propertyName,
+                                            'device': deviceName})
         self.blobMode = blobHandling
         self.sendCmd(cmd)
         return True

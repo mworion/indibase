@@ -61,7 +61,7 @@ logging.info('start')
 
 app = PyQt5.QtWidgets.QApplication(sys.argv)
 widget = TestQtIndi()
-client = indiBase.IndiBase('192.168.2.57')
+client = indiBase.Client('192.168.2.57')
 client.connectServer()
 client.setVerbose(True)
 client.watchDevice('CCD Simulator')
