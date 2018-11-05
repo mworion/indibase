@@ -121,6 +121,7 @@ class IndiBase(PyQt5.QtCore.QObject):
         self.signals = INDISignals()
         self.connected = False
         self.verbose = False
+        self.blobMode = 'Never'
         self.devices = dict()
         self.curDepth = 0
         # tcp handling
@@ -197,7 +198,7 @@ class IndiBase(PyQt5.QtCore.QObject):
             self.connected = False
             return False
         self.connected = True
-        self.serverConnected.emit()
+        self.signals.serverConnected.emit()
         return True
 
     def disconnectServer(self):
@@ -213,7 +214,7 @@ class IndiBase(PyQt5.QtCore.QObject):
         self.connected = False
         self.socket.close()
         self._clearDevices()
-        self.serverDisconnected.emit()
+        self.signals.serverDisconnected.emit()
         return True
 
     def isServerConnected(self):
@@ -276,7 +277,7 @@ class IndiBase(PyQt5.QtCore.QObject):
                 deviceList.append(device)
         return deviceList
 
-    def setBlobMode(self, blobHandling, deviceName, propertyName=None):
+    def setBlobMode(self, blobHandling='Never', deviceName='', propertyName=None):
         """
         Part of BASE CLIENT API of EKOS
 
@@ -285,25 +286,24 @@ class IndiBase(PyQt5.QtCore.QObject):
         :param propertyName:
         :return: true if server connected
         """
-        # todo where is set blobe mode
-        cmd = indiXML.enableBLOB([indiXML.oneText(blobHandling,
-                                                     indi_attr={'name': elementName})
-                                     ],
-                                    indi_attr={'name': propertyName,
-                                               'device': deviceName})
+
+        cmd = indiXML.enableBLOB(blobHandling,
+                                 indi_attr={'device': deviceName})
+        self.blobMode = blobHandling
         self.sendCmd(cmd)
         return True
 
-        indiXML.enableBLOB('Also', indi_attr={'device': self.app.workerINDI.cameraDevice}))
-        pass
-
-    def getBlobMode(self):
+    def getBlobMode(self, deviceName='', propertyName=None):
         """
         Part of BASE CLIENT API of EKOS
 
+        :param deviceName:
+        :param propertyName:
         :return: true if server connected
         """
-        pass
+        device = self.getDevice(deviceName)
+        a=1
+        return
 
     def getHost(self):
         """
@@ -525,7 +525,7 @@ class IndiBase(PyQt5.QtCore.QObject):
                                  indiXML.DefNumberVector,
                                  )
                           ):
-                self.newProperty.emit(vector)
+                self.signals.newProperty.emit(vector)
             elif isinstance(elem, indiXML.SetBLOBVector):
                 self.signals.newBLOB.emit(vector)
             elif isinstance(elem, indiXML.SetSwitchVector):
