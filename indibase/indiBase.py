@@ -53,6 +53,7 @@ class Device(object):
     and attributes are stored in a the devices dict.
 
         >>> indiDevice = Device(
+        >>>                     name=''
         >>>                     )
 
     """
@@ -65,10 +66,11 @@ class Device(object):
     logger = logging.getLogger(__name__)
 
     def __init__(self,
+                 name='',
                  ):
         super().__init__()
 
-        self.properties = dict()
+        self.name = name
 
 
 class Client(PyQt5.QtCore.QObject):
@@ -277,15 +279,15 @@ class Client(PyQt5.QtCore.QObject):
                            )
         return True
 
-    def getDevice(self, device):
+    def getDevice(self, deviceName):
         """
         getDevice collects all the data of the given device
 
-        :param device: name of device
+        :param deviceName: name of device
         :return: dict with data of that give device
         """
 
-        return self.devices[device]
+        return self.devices[deviceName]
 
     def getDevices(self, driverInterface):
         """
@@ -297,9 +299,9 @@ class Client(PyQt5.QtCore.QObject):
         """
 
         deviceList = list()
-        for device in self.devices:
-            if self._getDriverInterface(device) & driverInterface:
-                deviceList.append(device)
+        for deviceName in self.devices:
+            if self._getDriverInterface(deviceName) & driverInterface:
+                deviceList.append(deviceName)
         return deviceList
 
     def setBlobMode(self, blobHandling='Never', deviceName='', propertyName=''):
@@ -327,9 +329,8 @@ class Client(PyQt5.QtCore.QObject):
         :param propertyName:
         :return: true if server connected
         """
-        device = self.getDevice(deviceName)
-        a=1
-        return
+
+        pass
 
     def getHost(self):
         """
@@ -467,18 +468,18 @@ class Client(PyQt5.QtCore.QObject):
         if self.verbose:
             print(indiCommand.toXML())
 
-    def _getDriverInterface(self, device):
+    def _getDriverInterface(self, deviceName):
         """
         _getDriverInterface look the type of the device's driver interface up and gives
         it back as binary value.
 
-        :param device: device name
+        :param deviceName: device name
         :return: binary value of type of device drivers interface
         """
 
-        val = self.devices[device].get('DRIVER_INFO', '')
+        val = self.devices[deviceName].__dict__.get('DRIVER_INFO', '')
         if val:
-            interface = self.devices[device]['DRIVER_INFO'].get('DRIVER_INTERFACE', '')
+            interface = val.get('DRIVER_INTERFACE', '')
             return int(interface)
         else:
             return 0
@@ -491,9 +492,9 @@ class Client(PyQt5.QtCore.QObject):
         :return: success for test purpose
         """
 
-        for device in self.devices:
-            self.devices[device] = {}
-            self.signals.removeDevice.emit(device)
+        for deviceName in self.devices:
+            self.devices[deviceName] = None
+            self.signals.removeDevice.emit(deviceName)
         self.devices = {}
         return True
 
@@ -513,13 +514,11 @@ class Client(PyQt5.QtCore.QObject):
             self.logger.error('No device in elem: {0}'.format(elem))
             return False
 
-        device = elem.attr['device']
-        if device not in self.devices:
-            self.devices[device] = Device()
-            # todo: how to proceed
-            # todo: rename device here with deviceName ?
-            # todo: writing directly to attributes in class Device()
-            self.signals.newDevice.emit(device)
+        deviceName = elem.attr['device']
+        if deviceName not in self.devices:
+            self.devices[deviceName] = Device(deviceName)
+            self.signals.newDevice.emit(deviceName)
+        rawDev = self.devices[deviceName]
 
         # deleting properties from devices
         if isinstance(elem, indiXML.DelProperty):
@@ -528,8 +527,8 @@ class Client(PyQt5.QtCore.QObject):
             if 'name' not in elem.attr:
                 return False
             delVector = elem.attr['name']
-            if delVector in self.devices[device]:
-                del self.devices[device][delVector]
+            if delVector in rawDev.__dict__:
+                del rawDev.delVector
                 self.signals.removeProperty.emit(delVector)
 
         elif isinstance(elem, (indiXML.SetBLOBVector,
@@ -568,13 +567,13 @@ class Client(PyQt5.QtCore.QObject):
             elif isinstance(elem, indiXML.SetMessageVector):
                 self.signals.newMessage.emit(vector)
 
-            if vector not in self.devices[device]:
-                self.devices[device][vector] = {}
+            if vector not in rawDev.__dict__:
+                setattr(rawDev, vector, {})
             for elemAttr in elem.attr:
-                self.devices[device][vector][elemAttr] = elem.attr.get(elemAttr)
+                rawDev.__dict__[vector][elemAttr] = elem.attr.get(elemAttr)
             if not isinstance(elem, indiXML.DefBLOBVector):
                 for elt in elem.elt_list:
-                    self.devices[device][vector][elt.attr['name']] = elt.getValue()
+                    rawDev.__dict__[vector][elt.attr['name']] = elt.getValue()
 
     @PyQt5.QtCore.pyqtSlot()
     def _handleReadyRead(self):
