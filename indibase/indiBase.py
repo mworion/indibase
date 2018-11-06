@@ -72,6 +72,18 @@ class Device(object):
 
         self.name = name
 
+    def getNumber(self, propertyName):
+        return getattr(self, propertyName)
+
+    def getText(self, propertyName):
+        return getattr(self, propertyName)
+
+    def getSwitch(self, propertyName):
+        return getattr(self, propertyName)
+
+    def getLight(self, propertyName):
+        return getattr(self, propertyName)
+
 
 class Client(PyQt5.QtCore.QObject):
     """
@@ -287,7 +299,7 @@ class Client(PyQt5.QtCore.QObject):
         :return: dict with data of that give device
         """
 
-        return self.devices[deviceName]
+        return self.devices.get(deviceName, None)
 
     def getDevices(self, driverInterface):
         """

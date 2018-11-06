@@ -65,12 +65,15 @@ client = indiBase.Client('192.168.2.57')
 client.connectServer()
 client.setVerbose(True)
 client.watchDevice('CCD Simulator')
+
 client.connectDevice('CCD Simulator')
 rc = app.exec_()
+ccdDevice = client.getDevice('CCD Simulator')
 client.setBlobMode('Also', 'CCD Simulator')
 print(client.getDevices(client.CCD_INTERFACE))
-# print(client.getDevice('CCD Simulator'))
-client.getBlobMode('CCD Simulator')
+print(ccdDevice.getSwitch('CONNECTION'))
+
+
 client.disconnectDevice('CCD Simulator')
 client.disconnectServer()
 sys.exit(rc)
