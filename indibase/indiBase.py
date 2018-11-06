@@ -46,9 +46,34 @@ class INDISignals(PyQt5.QtCore.QObject):
     serverDisconnected = PyQt5.QtCore.pyqtSignal()
 
 
+class Device(object):
+    """
+    Device implements an INDI Device. it rely on PyQt5 and it's signalling scheme.
+    there might be not all capabilities implemented right now. all the data, properties
+    and attributes are stored in a the devices dict.
+
+        >>> indiDevice = Device(
+        >>>                     )
+
+    """
+
+    __all__ = ['Device',
+               'version',
+               ]
+
+    version = '0.1'
+    logger = logging.getLogger(__name__)
+
+    def __init__(self,
+                 ):
+        super().__init__()
+
+        self.properties = dict()
+
+
 class Client(PyQt5.QtCore.QObject):
     """
-    IndiBase implements an INDI Base Client for INDI servers. it rely on PyQt5 and it's
+    Client implements an INDI Base Client for INDI servers. it rely on PyQt5 and it's
     signalling scheme. there might be not all capabilities implemented right now. all
     the data, properties and attributes are stored in a the devices dict.
     The reading and parsing of the XML data is done in a streaming way, so for xml the
@@ -490,7 +515,10 @@ class Client(PyQt5.QtCore.QObject):
 
         device = elem.attr['device']
         if device not in self.devices:
-            self.devices[device] = {}
+            self.devices[device] = Device()
+            # todo: how to proceed
+            # todo: rename device here with deviceName ?
+            # todo: writing directly to attributes in class Device()
             self.signals.newDevice.emit(device)
 
         # deleting properties from devices
