@@ -543,18 +543,18 @@ class Client(PyQt5.QtCore.QObject):
                 del rawDev.delVector
                 self.signals.removeProperty.emit(delVector)
 
-        elif isinstance(elem, (indiXML.SetBLOBVector,
-                               indiXML.SetSwitchVector,
-                               indiXML.SetTextVector,
-                               indiXML.SetLightVector,
-                               indiXML.SetNumberVector,
-                               indiXML.DefBLOBVector,
-                               indiXML.DefSwitchVector,
-                               indiXML.DefTextVector,
-                               indiXML.DefLightVector,
-                               indiXML.DefNumberVector,
-                               )
-                        ):
+        if isinstance(elem, (indiXML.SetBLOBVector,
+                             indiXML.SetSwitchVector,
+                             indiXML.SetTextVector,
+                             indiXML.SetLightVector,
+                             indiXML.SetNumberVector,
+                             indiXML.DefBLOBVector,
+                             indiXML.DefSwitchVector,
+                             indiXML.DefTextVector,
+                             indiXML.DefLightVector,
+                             indiXML.DefNumberVector,
+                             )
+                      ):
             if 'name' not in elem.attr:
                 return False
             vector = elem.attr['name']
@@ -582,9 +582,11 @@ class Client(PyQt5.QtCore.QObject):
             if vector not in rawDev.__dict__:
                 setattr(rawDev, vector, {})
             for elemAttr in elem.attr:
+                print('elemAttr ', elemAttr)
                 rawDev.__dict__[vector][elemAttr] = elem.attr.get(elemAttr)
             if not isinstance(elem, indiXML.DefBLOBVector):
                 for elt in elem.elt_list:
+                    print('elt ', elt)
                     rawDev.__dict__[vector][elt.attr['name']] = elt.getValue()
 
     @PyQt5.QtCore.pyqtSlot()
