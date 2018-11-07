@@ -539,7 +539,7 @@ class Client(PyQt5.QtCore.QObject):
             if 'name' not in elem.attr:
                 return False
             delVector = elem.attr['name']
-            if delVector in rawDev.__dict__:
+            if hasattr(rawDev, delVector):
                 del rawDev.delVector
                 self.signals.removeProperty.emit(delVector)
 
@@ -579,7 +579,7 @@ class Client(PyQt5.QtCore.QObject):
             elif isinstance(elem, indiXML.SetMessageVector):
                 self.signals.newMessage.emit(vector)
 
-            if vector not in rawDev.__dict__:
+            if not hasattr(rawDev, vector):
                 setattr(rawDev, vector, {})
             for elemAttr in elem.attr:
                 print('elemAttr ', elemAttr)
