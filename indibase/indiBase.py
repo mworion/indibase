@@ -581,13 +581,18 @@ class Client(PyQt5.QtCore.QObject):
 
             if not hasattr(rawDev, vector):
                 setattr(rawDev, vector, {})
+            # add attributes to vector
             for elemAttr in elem.attr:
-                print('elemAttr ', elemAttr)
                 rawDev.__dict__[vector][elemAttr] = elem.attr.get(elemAttr)
+            # add vector type
+            rawDev.__dict__[vector]['etype'] = elem.etype
             if not isinstance(elem, indiXML.DefBLOBVector):
+                # add elements in vector flat
                 for elt in elem.elt_list:
-                    print('elt ', elt)
                     rawDev.__dict__[vector][elt.attr['name']] = elt.getValue()
+        else:
+            pass
+            # print(elem.attr)
 
     @PyQt5.QtCore.pyqtSlot()
     def _handleReadyRead(self):

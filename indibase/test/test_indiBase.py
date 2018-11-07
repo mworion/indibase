@@ -72,6 +72,7 @@ ccdDevice = client.getDevice('CCD Simulator')
 client.setBlobMode('Also', 'CCD Simulator')
 # print(client.getDevices(client.CCD_INTERFACE))
 print(ccdDevice.getSwitch('CONNECTION'))
+print(ccdDevice.getNumber('CCD_EXPOSURE'))
 
 
 client.disconnectDevice('CCD Simulator')
