@@ -545,12 +545,17 @@ class Client(PyQt5.QtCore.QObject):
         :return: binary value of type of device drivers interface
         """
 
-        val = self.devices[deviceName].__dict__.get('DRIVER_INFO', '')
+        device = self.devices[deviceName]
+        if not hasattr(device, 'DRIVER_INFO'):
+            return -1
+        val = getattr(device, 'DRIVER_INFO')
         if val:
-            interface = val.get('DRIVER_INTERFACE', '')
+            val = val['property'].get('DRIVER_INTERFACE', '')
+            if val:
+                interface = val['value']
             return int(interface)
         else:
-            return 0
+            return -1
 
     def _clearDevices(self):
         """

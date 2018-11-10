@@ -220,5 +220,11 @@ def test_getDevice2():
     test.disconnectServer()
 
 
-def test_getDevices3():
-    pass
+def test_getDevices1():
+    test.setServer('localhost')
+    test.connectServer()
+    test.watchDevice('CCD Simulator')
+    QTest.qWait(500)
+    val = test.getDevices(test.CCD_INTERFACE)
+    assert val
+    assert 'CCD Simulator' in val
