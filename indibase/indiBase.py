@@ -84,6 +84,25 @@ class Device(object):
             retDict[prop] = propList[prop]['value']
         return retDict
 
+    def setNumber(self, propertyName, elements):
+
+        if not hasattr(self, propertyName):
+            return False
+        elementList = []
+        for elementName in elements:
+            if elementName not in self.__dict__[propertyName]['property']:
+                return
+            value = elements[elementName]
+            element = indiXML.oneNumber(value,
+                                        indi_attr={'name': elementName})
+            elementList.append(element)
+
+        cmd = indiXML.newNumberVector(elementList,
+                                      indi_attr={'name': propertyName,
+                                                 'device': self.name})
+        val = cmd
+        return val
+
     def getText(self, propertyName):
         _property = getattr(self, propertyName)
         if _property['propertyType'] not in ['defTextVector',

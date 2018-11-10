@@ -357,3 +357,20 @@ def test_sendNewText1():
         call_val = test.sendCmd.call_args_list[0][0][0]
         assert call_ref.toXML() == call_val.toXML()
     test.disconnectServer()
+
+
+def test_setNumber():
+    test.setServer('localhost')
+    test.connectServer()
+    test.watchDevice('CCD Simulator')
+    QTest.qWait(500)
+    device = test.getDevice('CCD Simulator')
+    numb = device.getNumber('CCD_FRAME')
+    print(numb)
+    numb['X'] = 100
+    numb['Y'] = 100
+    numb['WIDTH'] = 1000
+    numb['HEIGHT'] = 500
+    device.setNumber('CCD_FRAME', numb)
+    pass
+
