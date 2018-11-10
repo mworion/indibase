@@ -72,22 +72,55 @@ class Device(object):
 
         self.name = name
 
+    # todo: checking types !
+
     def getNumber(self, propertyName):
-        propList = getattr(self, propertyName)['property']
+        _property = getattr(self, propertyName)
+        if _property['propertyType'] not in ['defNumberVector',
+                                             'setNumberVector']:
+            self.logger.error('Property: {0} is not Number'.format(_property['propertyType']))
+            return
+        propList = _property['property']
         retDict = {}
         for prop in propList:
             retDict[prop] = propList[prop]['value']
         return retDict
 
     def getText(self, propertyName):
-        return getattr(self, propertyName)
+        _property = getattr(self, propertyName)
+        if _property['propertyType'] not in ['defTextVector',
+                                             'setTextVector']:
+            self.logger.error('Property: {0} is not Text'.format(_property['propertyType']))
+            return
+        propList = _property['property']
+        retDict = {}
+        for prop in propList:
+            retDict[prop] = propList[prop]['value']
+        return retDict
 
     def getSwitch(self, propertyName):
-        # get the first of the switches ?
-        return getattr(self, propertyName)
+        _property = getattr(self, propertyName)
+        if _property['propertyType'] not in ['defSwitchVector',
+                                             'setSwitchVector']:
+            self.logger.error('Property: {0} is not Switch'.format(_property['propertyType']))
+            return
+        propList = _property['property']
+        retDict = {}
+        for prop in propList:
+            retDict[prop] = propList[prop]['value']
+        return retDict
 
     def getLight(self, propertyName):
-        return getattr(self, propertyName)
+        _property = getattr(self, propertyName)
+        if _property['propertyType'] not in ['defLightVector',
+                                             'setLightVector']:
+            self.logger.error('Property: {0} is not Light'.format(_property['propertyType']))
+            return
+        propList = _property['property']
+        retDict = {}
+        for prop in propList:
+            retDict[prop] = propList[prop]['value']
+        return retDict
 
     def getBlob(self, propertyName):
         return
@@ -542,14 +575,14 @@ class Client(PyQt5.QtCore.QObject):
 
         # deleting properties from devices
         if isinstance(chunk, indiXML.DelProperty):
-            if device not in self.devices:
+            if deviceName not in self.devices:
                 return False
             if 'name' not in chunk.attr:
                 return False
-            delVector = chunk.attr['name']
-            if hasattr(rawDev, delVector):
-                del rawDev.delVector
-                self.signals.removeProperty.emit(delVector)
+            delProperty = chunk.attr['name']
+            if hasattr(rawDev, delProperty):
+                delattr(rawDev, delProperty)
+                self.signals.removeProperty.emit(delProperty)
 
         if isinstance(chunk, (indiXML.SetBLOBVector,
                               indiXML.SetSwitchVector,
@@ -565,36 +598,16 @@ class Client(PyQt5.QtCore.QObject):
                       ):
             if 'name' not in chunk.attr:
                 return False
-            property = chunk.attr['name']
-            if isinstance(chunk, (indiXML.DefBLOBVector,
-                                  indiXML.DefSwitchVector,
-                                  indiXML.DefTextVector,
-                                  indiXML.DefLightVector,
-                                  indiXML.DefNumberVector,
-                                  )
-                          ):
-                self.signals.newProperty.emit(property)
-            elif isinstance(chunk, indiXML.SetBLOBVector):
-                self.signals.newBLOB.emit(property)
-            elif isinstance(chunk, indiXML.SetSwitchVector):
-                self.signals.newSwitch.emit(property)
-            elif isinstance(chunk, indiXML.SetNumberVector):
-                self.signals.newNumber.emit(property)
-            elif isinstance(chunk, indiXML.SetTextVector):
-                self.signals.newText.emit(property)
-            elif isinstance(chunk, indiXML.SetLightVector):
-                self.signals.newLight.emit(property)
-            elif isinstance(chunk, indiXML.SetMessageVector):
-                self.signals.newMessage.emit(property)
+            _property = chunk.attr['name']
 
-            if not hasattr(rawDev, property):
+            if not hasattr(rawDev, _property):
                 # set property (SetSwitchVector etc.)
-                setattr(rawDev, property, {})
+                setattr(rawDev, _property, {})
             # shortening for readability
-            prop = rawDev.__dict__[property]
+            prop = rawDev.__dict__[_property]
             # add property type
             prop['propertyType'] = chunk.etype
-            # add attributes to property
+            # add attributes to _property
             for vecAttr in chunk.attr:
                 prop[vecAttr] = chunk.attr.get(vecAttr)
             # adding subspace for atomic elements (text, switch, etc)
@@ -621,6 +634,27 @@ class Client(PyQt5.QtCore.QObject):
                 # now all attributes of element
                 for attr in elt.attr:
                     element[name][attr] = elt.attr[attr]
+            # do signals
+            if isinstance(chunk, (indiXML.DefBLOBVector,
+                                  indiXML.DefSwitchVector,
+                                  indiXML.DefTextVector,
+                                  indiXML.DefLightVector,
+                                  indiXML.DefNumberVector,
+                                  )
+                          ):
+                self.signals.newProperty.emit(_property)
+            elif isinstance(chunk, indiXML.SetBLOBVector):
+                self.signals.newBLOB.emit(_property)
+            elif isinstance(chunk, indiXML.SetSwitchVector):
+                self.signals.newSwitch.emit(_property)
+            elif isinstance(chunk, indiXML.SetNumberVector):
+                self.signals.newNumber.emit(_property)
+            elif isinstance(chunk, indiXML.SetTextVector):
+                self.signals.newText.emit(_property)
+            elif isinstance(chunk, indiXML.SetLightVector):
+                self.signals.newLight.emit(_property)
+            elif isinstance(chunk, indiXML.SetMessageVector):
+                self.signals.newMessage.emit(_property)
         else:
             pass
             # print(elem.attr)
