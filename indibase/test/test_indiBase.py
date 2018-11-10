@@ -199,6 +199,18 @@ def test_disconnectDevice2():
 
 def test_disconnectDevice3():
 
+    test.setServer('localhost')
+    suc = test.connectServer()
+    assert suc
+    suc = test.connectDevice('CCD Simulator')
+    assert suc
+    suc = test.disconnectDevice('Test')
+    assert not suc
+    test.disconnectServer()
+
+
+def test_disconnectDevice4():
+
     suc = test.disconnectDevice('CCD Simulator')
     assert not suc
 
@@ -237,7 +249,6 @@ def test_getDevices2():
     test.watchDevice('CCD Simulator')
     QTest.qWait(500)
     val = test.getDevices(test.TELESCOPE_INTERFACE)
-    print(val)
     assert val
     assert 'Telescope Simulator' not in val
     test.disconnectServer()
@@ -249,3 +260,100 @@ def test_getDevices3():
     assert not val
     test.disconnectServer()
 
+
+def test_setBlobMode1():
+    test.setServer('localhost')
+    test.connectServer()
+    call_ref = indiXML.enableBLOB('Never',
+                                  indi_attr={'name': 'blob',
+                                             'device': 'CCD Simulator'})
+    test.watchDevice('CCD Simulator')
+    QTest.qWait(500)
+    ret_val = True
+    with mock.patch.object(test,
+                           'sendCmd',
+                           return_value=ret_val):
+        suc = test.setBlobMode('Never',
+                               'CCD Simulator',
+                               'blob')
+        assert suc
+        call_val = test.sendCmd.call_args_list[0][0][0]
+        assert call_ref.toXML() == call_val.toXML()
+    test.disconnectServer()
+
+
+def test_setBlobMode2():
+    test.setServer('localhost')
+    test.connectServer()
+    call_ref = indiXML.enableBLOB('Never',
+                                  indi_attr={'name': 'blob',
+                                             'device': 'CCD Simulator'})
+    test.watchDevice('CCD Simulator')
+    QTest.qWait(500)
+    ret_val = True
+    with mock.patch.object(test,
+                           'sendCmd',
+                           return_value=ret_val):
+        suc = test.setBlobMode(deviceName='CCD Simulator',
+                               propertyName='blob')
+        assert suc
+        call_val = test.sendCmd.call_args_list[0][0][0]
+        assert call_ref.toXML() == call_val.toXML()
+    test.disconnectServer()
+
+
+def test_setBlobMode3():
+    test.setServer('localhost')
+    test.connectServer()
+    call_ref = indiXML.enableBLOB('Never',
+                                  indi_attr={'name': 'blob',
+                                             'device': 'CCD Simulator'})
+    test.watchDevice('CCD Simulator')
+    QTest.qWait(500)
+    ret_val = True
+    with mock.patch.object(test,
+                           'sendCmd',
+                           return_value=ret_val):
+        suc = test.setBlobMode(deviceName='',
+                               propertyName='blob')
+        assert not suc
+    test.disconnectServer()
+
+
+def test_getHost():
+    test.setServer('localhost')
+    assert 'localhost' == test.getHost()
+
+
+def test_getPort1():
+    test.setServer('localhost')
+    assert 7624 == test.getPort()
+
+
+def test_getPort2():
+    test.setServer('localhost', 3000)
+    assert 3000 == test.getPort()
+
+
+def test_sendNewText1():
+    test.setServer('localhost')
+    test.connectServer()
+    call_ref = indiXML.newTextVector([indiXML.oneText('TEST',
+                                                      indi_attr={'name': 'blob'})
+                                      ],
+                                     indi_attr={'name': 'anna',
+                                                'device': 'CCD Simulator'})
+    test.watchDevice('CCD Simulator')
+    QTest.qWait(500)
+    ret_val = True
+    with mock.patch.object(test,
+                           'sendCmd',
+                           return_value=ret_val):
+        suc = test.sendNewText(deviceName='CCD Simulator',
+                               propertyName='anna',
+                               elementName='blob',
+                               text='TEST')
+        assert suc
+        call_val = test.sendCmd.call_args_list[0][0][0]
+        assert call_ref.toXML() == call_val.toXML()
+    test.disconnectServer()

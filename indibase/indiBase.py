@@ -376,12 +376,16 @@ class Client(PyQt5.QtCore.QObject):
         :return: true if server connected
         """
 
+        if not deviceName:
+            return False
+        if deviceName not in self.devices:
+            return False
         cmd = indiXML.enableBLOB(blobHandling,
                                  indi_attr={'name': propertyName,
                                             'device': deviceName})
         self.blobMode = blobHandling
-        self.sendCmd(cmd)
-        return True
+        val = self.sendCmd(cmd)
+        return val
 
     def getBlobMode(self, deviceName='', propertyName=None):
         """
