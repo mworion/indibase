@@ -73,16 +73,24 @@ class Device(object):
         self.name = name
 
     def getNumber(self, propertyName):
-        return getattr(self, propertyName)
+        propList = getattr(self, propertyName)['property']
+        retDict = {}
+        for prop in propList:
+            retDict[prop] = propList[prop]['value']
+        return retDict
 
     def getText(self, propertyName):
         return getattr(self, propertyName)
 
     def getSwitch(self, propertyName):
+        # get the first of the switches ?
         return getattr(self, propertyName)
 
     def getLight(self, propertyName):
         return getattr(self, propertyName)
+
+    def getBlob(self, propertyName):
+        return
 
 
 class Client(PyQt5.QtCore.QObject):
@@ -510,86 +518,109 @@ class Client(PyQt5.QtCore.QObject):
         self.devices = {}
         return True
 
-    def _dispatchCmd(self, elem):
+    def _dispatchCmd(self, chunk):
         """
         _dispatchCmd parses the incoming indi XL data and builds up a dictionary which
         holds all the data.
 
-        :param elem: raw indi XML element
+        :param chunk: raw indi XML element
         :return: success if it could be parsed
         """
 
-        elem = indiXML.parseETree(elem)
+        chunk = indiXML.parseETree(chunk)
         if self.verbose:
-            print(elem)
-        if 'device' not in elem.attr:
-            self.logger.error('No device in elem: {0}'.format(elem))
+            print(chunk)
+        if 'device' not in chunk.attr:
+            self.logger.error('No device in chunk: {0}'.format(chunk))
             return False
 
-        deviceName = elem.attr['device']
+        deviceName = chunk.attr['device']
         if deviceName not in self.devices:
             self.devices[deviceName] = Device(deviceName)
             self.signals.newDevice.emit(deviceName)
         rawDev = self.devices[deviceName]
 
         # deleting properties from devices
-        if isinstance(elem, indiXML.DelProperty):
+        if isinstance(chunk, indiXML.DelProperty):
             if device not in self.devices:
                 return False
-            if 'name' not in elem.attr:
+            if 'name' not in chunk.attr:
                 return False
-            delVector = elem.attr['name']
+            delVector = chunk.attr['name']
             if hasattr(rawDev, delVector):
                 del rawDev.delVector
                 self.signals.removeProperty.emit(delVector)
 
-        if isinstance(elem, (indiXML.SetBLOBVector,
-                             indiXML.SetSwitchVector,
-                             indiXML.SetTextVector,
-                             indiXML.SetLightVector,
-                             indiXML.SetNumberVector,
-                             indiXML.DefBLOBVector,
-                             indiXML.DefSwitchVector,
-                             indiXML.DefTextVector,
-                             indiXML.DefLightVector,
-                             indiXML.DefNumberVector,
-                             )
+        if isinstance(chunk, (indiXML.SetBLOBVector,
+                              indiXML.SetSwitchVector,
+                              indiXML.SetTextVector,
+                              indiXML.SetLightVector,
+                              indiXML.SetNumberVector,
+                              indiXML.DefBLOBVector,
+                              indiXML.DefSwitchVector,
+                              indiXML.DefTextVector,
+                              indiXML.DefLightVector,
+                              indiXML.DefNumberVector,
+                              )
                       ):
-            if 'name' not in elem.attr:
+            if 'name' not in chunk.attr:
                 return False
-            vector = elem.attr['name']
-            if isinstance(elem, (indiXML.DefBLOBVector,
-                                 indiXML.DefSwitchVector,
-                                 indiXML.DefTextVector,
-                                 indiXML.DefLightVector,
-                                 indiXML.DefNumberVector,
-                                 )
+            property = chunk.attr['name']
+            if isinstance(chunk, (indiXML.DefBLOBVector,
+                                  indiXML.DefSwitchVector,
+                                  indiXML.DefTextVector,
+                                  indiXML.DefLightVector,
+                                  indiXML.DefNumberVector,
+                                  )
                           ):
-                self.signals.newProperty.emit(vector)
-            elif isinstance(elem, indiXML.SetBLOBVector):
-                self.signals.newBLOB.emit(vector)
-            elif isinstance(elem, indiXML.SetSwitchVector):
-                self.signals.newSwitch.emit(vector)
-            elif isinstance(elem, indiXML.SetNumberVector):
-                self.signals.newNumber.emit(vector)
-            elif isinstance(elem, indiXML.SetTextVector):
-                self.signals.newText.emit(vector)
-            elif isinstance(elem, indiXML.SetLightVector):
-                self.signals.newLight.emit(vector)
-            elif isinstance(elem, indiXML.SetMessageVector):
-                self.signals.newMessage.emit(vector)
+                self.signals.newProperty.emit(property)
+            elif isinstance(chunk, indiXML.SetBLOBVector):
+                self.signals.newBLOB.emit(property)
+            elif isinstance(chunk, indiXML.SetSwitchVector):
+                self.signals.newSwitch.emit(property)
+            elif isinstance(chunk, indiXML.SetNumberVector):
+                self.signals.newNumber.emit(property)
+            elif isinstance(chunk, indiXML.SetTextVector):
+                self.signals.newText.emit(property)
+            elif isinstance(chunk, indiXML.SetLightVector):
+                self.signals.newLight.emit(property)
+            elif isinstance(chunk, indiXML.SetMessageVector):
+                self.signals.newMessage.emit(property)
 
-            if not hasattr(rawDev, vector):
-                setattr(rawDev, vector, {})
-            # add attributes to vector
-            for elemAttr in elem.attr:
-                rawDev.__dict__[vector][elemAttr] = elem.attr.get(elemAttr)
-            # add vector type
-            rawDev.__dict__[vector]['etype'] = elem.etype
-            if not isinstance(elem, indiXML.DefBLOBVector):
-                # add elements in vector flat
-                for elt in elem.elt_list:
-                    rawDev.__dict__[vector][elt.attr['name']] = elt.getValue()
+            if not hasattr(rawDev, property):
+                # set property (SetSwitchVector etc.)
+                setattr(rawDev, property, {})
+            # shortening for readability
+            prop = rawDev.__dict__[property]
+            # add property type
+            prop['propertyType'] = chunk.etype
+            # add attributes to property
+            for vecAttr in chunk.attr:
+                prop[vecAttr] = chunk.attr.get(vecAttr)
+            # adding subspace for atomic elements (text, switch, etc)
+            prop['property'] = {}
+            # shortening again
+            element = prop['property']
+            # now running through all atomic elements
+            for elt in chunk.elt_list:
+                # first the name
+                name = elt.attr['name']
+                element[name] = {}
+                element[name]['elementType'] = elt.etype
+                if not isinstance(elt, indiXML.DefBLOB):
+                    if elt.etype in ['defNumber',
+                                     'setNumber',
+                                     'oneNumber']:
+                        element[name]['value'] = float(elt.getValue())
+                    elif elt.etype in ['defSwitch',
+                                       'oneSwitch',
+                                       'setSwitch']:
+                        element[name]['value'] = (elt.getValue() == 'On')
+                    else:
+                        element[name]['value'] = elt.getValue()
+                # now all attributes of element
+                for attr in elt.attr:
+                    element[name][attr] = elt.attr[attr]
         else:
             pass
             # print(elem.attr)

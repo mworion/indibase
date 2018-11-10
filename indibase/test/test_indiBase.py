@@ -71,8 +71,10 @@ rc = app.exec_()
 ccdDevice = client.getDevice('CCD Simulator')
 client.setBlobMode('Also', 'CCD Simulator')
 # print(client.getDevices(client.CCD_INTERFACE))
-print(ccdDevice.getSwitch('CONNECTION'))
+# print(ccdDevice.getSwitch('CONNECTION'))
 print(ccdDevice.getNumber('CCD_EXPOSURE'))
+print(ccdDevice.getNumber('EQUATORIAL_PE'))
+print(ccdDevice.getNumber('CONNECTION'))
 
 
 client.disconnectDevice('CCD Simulator')
