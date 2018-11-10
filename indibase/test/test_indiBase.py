@@ -228,3 +228,24 @@ def test_getDevices1():
     val = test.getDevices(test.CCD_INTERFACE)
     assert val
     assert 'CCD Simulator' in val
+    test.disconnectServer()
+
+
+def test_getDevices2():
+    test.setServer('localhost')
+    test.connectServer()
+    test.watchDevice('CCD Simulator')
+    QTest.qWait(500)
+    val = test.getDevices(test.TELESCOPE_INTERFACE)
+    print(val)
+    assert val
+    assert 'Telescope Simulator' not in val
+    test.disconnectServer()
+
+
+def test_getDevices3():
+    test.setServer('localhost')
+    val = test.getDevices(test.CCD_INTERFACE)
+    assert not val
+    test.disconnectServer()
+
