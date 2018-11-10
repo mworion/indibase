@@ -34,14 +34,14 @@ class INDISignals(PyQt5.QtCore.QObject):
 
     newDevice = PyQt5.QtCore.pyqtSignal(str)
     removeDevice = PyQt5.QtCore.pyqtSignal(str)
-    newProperty = PyQt5.QtCore.pyqtSignal(str)
-    removeProperty = PyQt5.QtCore.pyqtSignal(str)
-    newBLOB = PyQt5.QtCore.pyqtSignal(str)
-    newSwitch = PyQt5.QtCore.pyqtSignal(str)
-    newNumber = PyQt5.QtCore.pyqtSignal(str)
-    newText = PyQt5.QtCore.pyqtSignal(str)
-    newLight = PyQt5.QtCore.pyqtSignal(str)
-    newMessage = PyQt5.QtCore.pyqtSignal(str)
+    newProperty = PyQt5.QtCore.pyqtSignal(str, str)
+    removeProperty = PyQt5.QtCore.pyqtSignal(str, str)
+    newBLOB = PyQt5.QtCore.pyqtSignal(str, str)
+    newSwitch = PyQt5.QtCore.pyqtSignal(str, str)
+    newNumber = PyQt5.QtCore.pyqtSignal(str, str)
+    newText = PyQt5.QtCore.pyqtSignal(str, str)
+    newLight = PyQt5.QtCore.pyqtSignal(str, str)
+    newMessage = PyQt5.QtCore.pyqtSignal(str, str)
     serverConnected = PyQt5.QtCore.pyqtSignal()
     serverDisconnected = PyQt5.QtCore.pyqtSignal()
 
@@ -71,8 +71,6 @@ class Device(object):
         super().__init__()
 
         self.name = name
-
-    # todo: checking types !
 
     def getNumber(self, propertyName):
         _property = getattr(self, propertyName)
@@ -582,7 +580,7 @@ class Client(PyQt5.QtCore.QObject):
             delProperty = chunk.attr['name']
             if hasattr(rawDev, delProperty):
                 delattr(rawDev, delProperty)
-                self.signals.removeProperty.emit(delProperty)
+                self.signals.removeProperty.emit(deviceName, delProperty)
 
         if isinstance(chunk, (indiXML.SetBLOBVector,
                               indiXML.SetSwitchVector,
@@ -642,19 +640,19 @@ class Client(PyQt5.QtCore.QObject):
                                   indiXML.DefNumberVector,
                                   )
                           ):
-                self.signals.newProperty.emit(_property)
+                self.signals.newProperty.emit(deviceName, _property)
             elif isinstance(chunk, indiXML.SetBLOBVector):
-                self.signals.newBLOB.emit(_property)
+                self.signals.newBLOB.emit(deviceName, _property)
             elif isinstance(chunk, indiXML.SetSwitchVector):
-                self.signals.newSwitch.emit(_property)
+                self.signals.newSwitch.emit(deviceName, _property)
             elif isinstance(chunk, indiXML.SetNumberVector):
-                self.signals.newNumber.emit(_property)
+                self.signals.newNumber.emit(deviceName, _property)
             elif isinstance(chunk, indiXML.SetTextVector):
-                self.signals.newText.emit(_property)
+                self.signals.newText.emit(deviceName, _property)
             elif isinstance(chunk, indiXML.SetLightVector):
-                self.signals.newLight.emit(_property)
+                self.signals.newLight.emit(deviceName, _property)
             elif isinstance(chunk, indiXML.SetMessageVector):
-                self.signals.newMessage.emit(_property)
+                self.signals.newMessage.emit(deviceName, _property)
         else:
             pass
             # print(elem.attr)
