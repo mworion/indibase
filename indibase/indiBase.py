@@ -235,7 +235,7 @@ class Client(PyQt5.QtCore.QObject):
         value = self.checkFormat(value)
         self._host = value
 
-    def setServer(self, host='', port=0):
+    def setServer(self, host='', port=7624):
         """
         Part of BASE CLIENT API of EKOS
         setServer sets the server address of the indi server
@@ -258,8 +258,8 @@ class Client(PyQt5.QtCore.QObject):
         """
         cmd = indiXML.clientGetProperties(indi_attr={'version': '1.7',
                                                      'device': deviceName})
-        self.sendCmd(cmd)
-        return True
+        val = self.sendCmd(cmd)
+        return val
 
     def connectServer(self):
         """
@@ -270,6 +270,7 @@ class Client(PyQt5.QtCore.QObject):
         """
 
         if self.connected:
+            self.signals.serverConnected.emit()
             return True
         self.socket.connectToHost(*self._host)
         if not self.socket.waitForConnected(self.CONNECTION_TIMEOUT):
@@ -311,11 +312,15 @@ class Client(PyQt5.QtCore.QObject):
         :return: success
         """
 
-        self.sendNewSwitch(deviceName=deviceName,
-                           propertyName='CONNECTION',
-                           elementName='CONNECT',
-                           )
-        return True
+        if not self.connected:
+            return False
+        if not deviceName:
+            return False
+        val = self.sendNewSwitch(deviceName=deviceName,
+                                 propertyName='CONNECTION',
+                                 elementName='CONNECT',
+                                 )
+        return val
 
     def disconnectDevice(self, deviceName):
         """
@@ -324,11 +329,15 @@ class Client(PyQt5.QtCore.QObject):
         :return: success
         """
 
-        self.sendNewSwitch(deviceName=deviceName,
-                           propertyName='CONNECTION',
-                           elementName='DISCONNECT',
-                           )
-        return True
+        if not self.connected:
+            return False
+        if not deviceName:
+            return False
+        val = self.sendNewSwitch(deviceName=deviceName,
+                                 propertyName='CONNECTION',
+                                 elementName='DISCONNECT',
+                                 )
+        return val
 
     def getDevice(self, deviceName):
         """
@@ -414,8 +423,8 @@ class Client(PyQt5.QtCore.QObject):
                                      ],
                                     indi_attr={'name': propertyName,
                                                'device': deviceName})
-        self.sendCmd(cmd)
-        return True
+        val = self.sendCmd(cmd)
+        return val
 
     def sendNewNumber(self, deviceName='', propertyName='', elementName='', value=0):
         """
@@ -433,8 +442,8 @@ class Client(PyQt5.QtCore.QObject):
                                        ],
                                       indi_attr={'name': propertyName,
                                                  'device': deviceName})
-        self.sendCmd(cmd)
-        return True
+        val = self.sendCmd(cmd)
+        return val
 
     def sendNewSwitch(self, deviceName='', propertyName='', elementName=''):
         """
@@ -451,8 +460,8 @@ class Client(PyQt5.QtCore.QObject):
                                        ],
                                       indi_attr={'name': propertyName,
                                                  'device': deviceName})
-        self.sendCmd(cmd)
-        return True
+        val = self.sendCmd(cmd)
+        return val
 
     def startBlob(self, deviceName, propertyName, timestamp):
         """
@@ -510,14 +519,20 @@ class Client(PyQt5.QtCore.QObject):
         flushes the buffer
 
         :param indiCommand: XML command to send
-        :return: nothing
+        :return: success of sending
         """
 
-        if self.connected:
-            self.socket.write(indiCommand.toXML() + b'\n')
-            self.socket.flush()
         if self.verbose:
             print(indiCommand.toXML())
+        if self.connected:
+            number = self.socket.write(indiCommand.toXML() + b'\n')
+            self.socket.flush()
+            if number > 0:
+                return True
+            else:
+                return False
+        else:
+            return False
 
     def _getDriverInterface(self, deviceName):
         """

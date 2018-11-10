@@ -13,97 +13,189 @@
 #
 ###########################################################
 # standard libraries
-import sys
-import logging
-import time
+from unittest import mock
 # external packages
 import PyQt5
-import PyQt5.QtWidgets
 # local import
 from indibase import indiBase
 from indibase import indiXML
 
+app = PyQt5.QtWidgets.QApplication([])
 
-class TestQtIndi(PyQt5.QtWidgets.QWidget):
-    def __init__(self, client):
-        super().__init__()
-
-        self.client = client
-        self.initUI()
-
-    def initUI(self):
-        qbtn = PyQt5.QtWidgets.QPushButton('Quit', self)
-        qbtn.resize(qbtn.sizeHint())
-        qbtn.move(50, 10)
-        conn = PyQt5.QtWidgets.QPushButton('Connect', self)
-        conn.move(50, 40)
-        disconn = PyQt5.QtWidgets.QPushButton('Disconnect', self)
-        disconn.move(50, 70)
-
-        qbtn.clicked.connect(self.quit)
-        conn.clicked.connect(self.connectDev)
-        disconn.clicked.connect(self.disconnectDev)
-
-        self.client.signals.newSwitch.connect(self.showStat)
-        self.client.signals.newNumber.connect(self.showExposure)
-        self.client.signals.newNumber.connect(self.showCoordinates)
-
-        self.setGeometry(300, 300, 250, 150)
-        self.setWindowTitle('Test IndiBaseClient')
-        self.show()
-
-    def connectDev(self):
-        self.client.connectDevice('CCD Simulator')
-
-    def disconnectDev(self):
-        self.client.disconnectDevice('CCD Simulator')
-
-    def showStat(self, name):
-        print(name)
-        ccdDevice = self.client.getDevice('CCD Simulator')
-        connSwitch = ccdDevice.getSwitch('CONNECTION')
-        print(connSwitch)
-
-    def showExposure(self, name):
-        if name != 'CCD_EXPOSURE':
-            return
-        ccdDevice = self.client.getDevice('CCD Simulator')
-        number = ccdDevice.getNumber('CCD_EXPOSURE')
-        print('Exposing for {0:3.1f} seconds'.format(number['CCD_EXPOSURE_VALUE']))
-
-    def showCoordinates(self, name):
-        if name != 'EQUATORIAL_EOD_COORD':
-            return
-        telDevice = self.client.getDevice('Telescope Simulator')
-        number = telDevice.getNumber('EQUATORIAL_EOD_COORD')
-        print('Telescope coordinates: RA:{0:3.5f}, DEC:{1:3.5f}'
-              .format(number['RA'], number['DEC']))
-
-    def quit(self):
-        self.close()
-        PyQt5.QtWidgets.QApplication.instance().quit()
+test = indiBase.Client()
 
 
-logging.basicConfig(level=logging.DEBUG,
-                    format='[%(asctime)s.%(msecs)03d]'
-                           '[%(levelname)7s]'
-                           '[%(filename)15s]'
-                           '[%(lineno)5s]'
-                           '[%(funcName)25s]'
-                           '[%(threadName)10s]'
-                           ' > %(message)s',
-                    handlers=[logging.FileHandler('test_indi.log')],
-                    datefmt='%Y-%m-%d %H:%M:%S',
-                    )
+#
+#
+# testing main
+#
+#
 
-app = PyQt5.QtWidgets.QApplication(sys.argv)
-client = indiBase.Client('192.168.2.57')
-widget = TestQtIndi(client)
-client.connectServer()
-client.setVerbose(False)
-client.watchDevice('CCD Simulator')
-client.watchDevice('Telescope Simulator')
-client.setBlobMode('Also', 'CCD Simulator')
-rc = app.exec_()
-client.disconnectServer()
-sys.exit(rc)
+def test_setServer1():
+
+    test.setServer()
+    assert ('', 7624) == test.host
+
+
+def test_setServer2():
+
+    test.setServer('heise.de')
+    assert ('heise.de', 7624) == test.host
+
+
+def test_setServer3():
+
+    test.setServer('heise.de', 7624)
+    assert ('heise.de', 7624) == test.host
+
+
+def test_watchDevice1():
+
+    call_ref = indiXML.clientGetProperties(indi_attr={'version': '1.7',
+                                                      'device': 'test'})
+    ret_val = True
+    with mock.patch.object(test,
+                           'sendCmd',
+                           return_value=ret_val):
+        test.watchDevice('test')
+        call_val = test.sendCmd.call_args_list[0][0][0]
+        assert call_ref.toXML() == call_val.toXML()
+
+
+def test_watchDevice2():
+
+    call_ref = indiXML.clientGetProperties(indi_attr={'version': '1.7',
+                                                      'device': ''})
+    ret_val = True
+    with mock.patch.object(test,
+                           'sendCmd',
+                           return_value=ret_val):
+        test.watchDevice()
+        call_val = test.sendCmd.call_args_list[0][0][0]
+        assert call_ref.toXML() == call_val.toXML()
+
+
+def test_connectServer1(qtbot):
+
+    test.setServer('')
+    with qtbot.assertNotEmitted(test.signals.serverConnected) as blocker:
+        suc = test.connectServer()
+        assert not suc
+
+
+def test_connectServer2(qtbot):
+
+    test.setServer('localhost')
+    with qtbot.waitSignal(test.signals.serverConnected) as blocker:
+        suc = test.connectServer()
+        assert suc
+    assert [] == blocker.args
+    test.disconnectServer()
+
+
+def test_connectServer3(qtbot):
+
+    test.setServer('localhost')
+    test.connected = True
+    with qtbot.waitSignal(test.signals.serverConnected) as blocker:
+        suc = test.connectServer()
+        assert suc
+    assert [] == blocker.args
+    test.disconnectServer()
+
+
+def test_disconnectServer1(qtbot):
+
+    test.setServer('')
+    with qtbot.assertNotEmitted(test.signals.serverDisconnected) as blocker:
+        suc = test.disconnectServer()
+        assert suc
+
+
+def test_disconnectServer2(qtbot):
+
+    test.setServer('localhost')
+    test.connectServer()
+    with qtbot.waitSignal(test.signals.serverDisconnected) as blocker:
+        suc = test.disconnectServer()
+        assert suc
+    assert [] == blocker.args
+
+
+def test_disconnectServer3(qtbot):
+
+    test.setServer('localhost')
+    with qtbot.assertNotEmitted(test.signals.serverDisconnected) as blocker:
+        suc = test.disconnectServer()
+        assert suc
+
+
+def test_isServerConnected1():
+
+    test.setServer('localhost')
+    test.connectServer()
+    val = test.isServerConnected()
+    assert val
+
+
+def test_isServerConnected2():
+
+    test.setServer('localhost')
+    test.disconnectServer()
+    val = test.isServerConnected()
+    assert not val
+
+
+def test_connectDevice1():
+
+    test.setServer('localhost')
+    test.connectServer()
+    suc = test.connectDevice('')
+    assert not suc
+    test.disconnectServer()
+
+
+def test_connectDevice2():
+
+    test.setServer('localhost')
+    test.connectServer()
+    suc = test.connectDevice('CCD Simulator')
+    assert suc
+    test.disconnectServer()
+
+
+def test_connectDevice3():
+
+    test.setServer('localhost')
+    suc = test.connectDevice('CCD Simulator')
+    assert not suc
+
+
+def test_disconnectDevice1():
+
+    test.setServer('localhost')
+    suc = test.connectServer()
+    assert suc
+    suc = test.connectDevice('CCD Simulator')
+    assert suc
+    suc = test.disconnectDevice('CCD Simulator')
+    assert suc
+    test.disconnectServer()
+
+
+def test_disconnectDevice2():
+
+    test.setServer('localhost')
+    suc = test.connectServer()
+    assert suc
+    suc = test.connectDevice('CCD Simulator')
+    assert suc
+    suc = test.disconnectDevice('')
+    assert not suc
+    test.disconnectServer()
+
+
+def test_disconnectDevice3():
+
+    suc = test.disconnectDevice('CCD Simulator')
+    assert not suc
