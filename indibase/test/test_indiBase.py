@@ -366,11 +366,13 @@ def test_setNumber():
     QTest.qWait(500)
     device = test.getDevice('CCD Simulator')
     numb = device.getNumber('CCD_FRAME')
-    print(numb)
-    numb['X'] = 100
-    numb['Y'] = 100
-    numb['WIDTH'] = 1000
-    numb['HEIGHT'] = 500
-    device.setNumber('CCD_FRAME', numb)
-    pass
+    numb['X'] = 0
+    numb['Y'] = 0
+    numb['WIDTH'] = 3388
+    numb['HEIGHT'] = 2712
+    test.sendNewNumber(deviceName='CCD Simulator',
+                       propertyName='CCD_FRAME',
+                       elements=numb,
+                       )
+
 

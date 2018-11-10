@@ -84,25 +84,6 @@ class Device(object):
             retDict[prop] = propList[prop]['value']
         return retDict
 
-    def setNumber(self, propertyName, elements):
-
-        if not hasattr(self, propertyName):
-            return False
-        elementList = []
-        for elementName in elements:
-            if elementName not in self.__dict__[propertyName]['property']:
-                return
-            value = elements[elementName]
-            element = indiXML.oneNumber(value,
-                                        indi_attr={'name': elementName})
-            elementList.append(element)
-
-        cmd = indiXML.newNumberVector(elementList,
-                                      indi_attr={'name': propertyName,
-                                                 'device': self.name})
-        val = cmd
-        return val
-
     def getText(self, propertyName):
         _property = getattr(self, propertyName)
         if _property['propertyType'] not in ['defTextVector',
@@ -451,20 +432,33 @@ class Client(PyQt5.QtCore.QObject):
         val = self.sendCmd(cmd)
         return val
 
-    def sendNewNumber(self, deviceName='', propertyName='', elementName='', value=0):
+    def sendNewNumber(self, deviceName='', propertyName='', elements='', value=0):
         """
         Part of BASE CLIENT API of EKOS
 
         :param deviceName:
         :param propertyName:
-        :param elementName:
+        :param elements:
         :param value:
         :return: success for test
         """
 
-        cmd = indiXML.newNumberVector([indiXML.oneNumber(value,
-                                                         indi_attr={'name': elementName})
-                                       ],
+        if deviceName not in self.devices:
+            return False
+        if not hasattr(self.devices[deviceName], propertyName):
+            return False
+        if isinstance(elements, dict):
+            elementList = []
+            for element in elements:
+                value = elements[element]
+                element = indiXML.oneNumber(value,
+                                            indi_attr={'name': element})
+                elementList.append(element)
+
+        else:
+            elementList = [indiXML.oneNumber(value, indi_attr={'name': elements})]
+
+        cmd = indiXML.newNumberVector(elementList,
                                       indi_attr={'name': propertyName,
                                                  'device': deviceName})
         val = self.sendCmd(cmd)
