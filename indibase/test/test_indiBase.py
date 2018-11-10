@@ -16,6 +16,7 @@
 from unittest import mock
 # external packages
 import PyQt5
+from PyQt5.QtTest import QTest
 # local import
 from indibase import indiBase
 from indibase import indiXML
@@ -178,6 +179,7 @@ def test_disconnectDevice1():
     assert suc
     suc = test.connectDevice('CCD Simulator')
     assert suc
+    QTest.qWait(500)
     suc = test.disconnectDevice('CCD Simulator')
     assert suc
     test.disconnectServer()
@@ -199,3 +201,24 @@ def test_disconnectDevice3():
 
     suc = test.disconnectDevice('CCD Simulator')
     assert not suc
+
+
+def test_getDevice1():
+
+    dev = test.getDevice('')
+    assert not dev
+
+
+def test_getDevice2():
+
+    test.setServer('localhost')
+    test.connectServer()
+    test.watchDevice('CCD Simulator')
+    QTest.qWait(500)
+    dev = test.getDevice('CCD Simulator')
+    assert dev
+    test.disconnectServer()
+
+
+def test_getDevices3():
+    pass

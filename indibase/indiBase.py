@@ -333,6 +333,8 @@ class Client(PyQt5.QtCore.QObject):
             return False
         if not deviceName:
             return False
+        if deviceName not in self.devices:
+            return False
         val = self.sendNewSwitch(deviceName=deviceName,
                                  propertyName='CONNECTION',
                                  elementName='DISCONNECT',
