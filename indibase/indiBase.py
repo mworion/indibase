@@ -641,7 +641,7 @@ class Client(PyQt5.QtCore.QObject):
                 # set property (SetSwitchVector etc.)
                 setattr(rawDev, _property, {})
             # shortening for readability
-            prop = rawDev.__dict__[_property]
+            prop = getattr(rawDev, _property)
             # add property type
             prop['propertyType'] = chunk.etype
             # add attributes to _property

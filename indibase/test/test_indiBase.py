@@ -374,5 +374,3 @@ def test_setNumber():
                        propertyName='CCD_FRAME',
                        elements=numb,
                        )
-
-
