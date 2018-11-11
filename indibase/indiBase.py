@@ -701,10 +701,8 @@ class Client(PyQt5.QtCore.QObject):
             elif isinstance(chunk, indiXML.SetMessageVector):
                 self.signals.newMessage.emit(deviceName, _property)
         else:
-            # todo: here are still the active devices, which are not handled
-            # question: do we miss something here ?
+            # todo: here are still the active devices, which are not handled ???
             pass
-            # print(chunk.attr)
 
     @PyQt5.QtCore.pyqtSlot()
     def _handleReadyRead(self):

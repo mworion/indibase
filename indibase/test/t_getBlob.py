@@ -87,7 +87,6 @@ class IndiPythonBase(PyQt5.QtWidgets.QWidget):
         print('got blob ')
         if deviceName == 'CCD Simulator':
             blob = self.ccdDevice.getBlob(propertyName=deviceProperty)
-            blob = blob
             """
             imageHDU = pyfits.HDUList.fromstring(blob['value'])
             imageHDU.writeto(self.imagePath, overwrite=True)
