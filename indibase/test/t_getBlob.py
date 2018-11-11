@@ -30,6 +30,8 @@ class IndiPythonBase(PyQt5.QtWidgets.QWidget):
         super().__init__()
 
         self.client = client
+        self.expose = None
+        self.ccdDevice = None
         self.initUI()
         self.runTest()
 
@@ -42,8 +44,6 @@ class IndiPythonBase(PyQt5.QtWidgets.QWidget):
         self.expose = PyQt5.QtWidgets.QPushButton('Expose', self)
         self.expose.move(50, 40)
         self.expose.clicked.connect(self.doExpose)
-        self.coord = PyQt5.QtWidgets.QPushButton('Coordinates', self)
-        self.coord.move(50, 70)
 
         self.client.signals.newNumber.connect(self.showExposure)
 
@@ -61,7 +61,7 @@ class IndiPythonBase(PyQt5.QtWidgets.QWidget):
 
     def doExpose(self):
         number = self.ccdDevice.getNumber('CCD_EXPOSURE')
-        number['CCD_EXPOSURE_VALUE'] = 3
+        number['CCD_EXPOSURE_VALUE'] = 1
         suc = self.client.sendNewNumber(deviceName='CCD Simulator',
                                         propertyName='CCD_EXPOSURE',
                                         elements=number,
@@ -73,7 +73,7 @@ class IndiPythonBase(PyQt5.QtWidgets.QWidget):
         if deviceProperty != 'CCD_EXPOSURE':
             return
         number = self.ccdDevice.getNumber('CCD_EXPOSURE')
-        print('Exposing for {0:3.5f} seconds'.format(number['CCD_EXPOSURE_VALUE']))
+        # print('Exposing for {0:3.5f} seconds'.format(number['CCD_EXPOSURE_VALUE']))
 
     def quit(self):
         self.client.disconnectServer()

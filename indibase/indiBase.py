@@ -597,7 +597,6 @@ class Client(PyQt5.QtCore.QObject):
         :return: success if it could be parsed
         """
 
-        chunk = indiXML.parseETree(chunk)
         if self.verbose:
             print(chunk)
         if 'device' not in chunk.attr:
@@ -636,7 +635,6 @@ class Client(PyQt5.QtCore.QObject):
             if 'name' not in chunk.attr:
                 return False
             _property = chunk.attr['name']
-
             if not hasattr(rawDev, _property):
                 # set property (SetSwitchVector etc.)
                 setattr(rawDev, _property, {})
@@ -685,6 +683,7 @@ class Client(PyQt5.QtCore.QObject):
             elif isinstance(chunk, indiXML.SetSwitchVector):
                 self.signals.newSwitch.emit(deviceName, _property)
             elif isinstance(chunk, indiXML.SetNumberVector):
+                # print(chunk)
                 self.signals.newNumber.emit(deviceName, _property)
             elif isinstance(chunk, indiXML.SetTextVector):
                 self.signals.newText.emit(deviceName, _property)
@@ -693,8 +692,9 @@ class Client(PyQt5.QtCore.QObject):
             elif isinstance(chunk, indiXML.SetMessageVector):
                 self.signals.newMessage.emit(deviceName, _property)
         else:
+            # todo: here are still the active devices, which are not handled
             pass
-            # print(elem.attr)
+            # print(chunk.attr)
 
     @PyQt5.QtCore.pyqtSlot()
     def _handleReadyRead(self):
@@ -720,6 +720,7 @@ class Client(PyQt5.QtCore.QObject):
             if self.curDepth > 0:
                 continue
             # print('Parsed ', elem.tag)
+            elem = indiXML.parseETree(elem)
             self._dispatchCmd(elem)
 
     @PyQt5.QtCore.pyqtSlot(PyQt5.QtNetwork.QAbstractSocket.SocketError)
