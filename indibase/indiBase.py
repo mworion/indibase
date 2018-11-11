@@ -577,7 +577,9 @@ class Client(PyQt5.QtCore.QObject):
             val = val['property'].get('DRIVER_INTERFACE', '')
             if val:
                 interface = val['value']
-            return int(interface)
+                return int(interface)
+            else:
+                return -1
         else:
             return -1
 
