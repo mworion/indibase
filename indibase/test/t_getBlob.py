@@ -45,7 +45,9 @@ class IndiPythonBase(PyQt5.QtWidgets.QWidget):
         self.expose.move(50, 40)
         self.expose.clicked.connect(self.doExpose)
 
+        self.client.signals.newDevice.connect(self.showDevice)
         self.client.signals.newNumber.connect(self.showExposure)
+        self.client.signals.newBLOB.connect(self.getBlob)
 
         self.setGeometry(300, 300, 250, 150)
         self.setWindowTitle('Test IndiBaseClient')
@@ -55,9 +57,15 @@ class IndiPythonBase(PyQt5.QtWidgets.QWidget):
         self.client.connectServer()
         self.client.setVerbose(False)
         self.client.watchDevice('CCD Simulator')
+        while not self.ccdDevice:
+            QTest.qWait(100)
+        self.client.connectDevice('CCD Simulator')
         self.client.setBlobMode('Also', 'CCD Simulator')
-        QTest.qWait(500)
-        self.ccdDevice = self.client.getDevice('CCD Simulator')
+
+    def showDevice(self, deviceName):
+        if deviceName == 'CCD Simulator':
+            self.ccdDevice = self.client.getDevice('CCD Simulator')
+            print('new device: ', deviceName)
 
     def doExpose(self):
         number = self.ccdDevice.getNumber('CCD_EXPOSURE')
@@ -73,8 +81,17 @@ class IndiPythonBase(PyQt5.QtWidgets.QWidget):
         if deviceProperty != 'CCD_EXPOSURE':
             return
         number = self.ccdDevice.getNumber('CCD_EXPOSURE')
-        # print('Exposing for {0:3.5f} seconds'.format(number['CCD_EXPOSURE_VALUE']))
+        print('Exposing for {0:3.5f} seconds'.format(number['CCD_EXPOSURE_VALUE']))
 
+    def getBlob(self, deviceName, deviceProperty):
+        print('got blob ')
+        if deviceName == 'CCD Simulator':
+            blob = self.ccdDevice.getBlob(propertyName=deviceProperty)
+            blob = blob
+            """
+            imageHDU = pyfits.HDUList.fromstring(blob['value'])
+            imageHDU.writeto(self.imagePath, overwrite=True)
+            """
     def quit(self):
         self.client.disconnectServer()
         self.close()
@@ -82,7 +99,7 @@ class IndiPythonBase(PyQt5.QtWidgets.QWidget):
 
 
 app = PyQt5.QtWidgets.QApplication(sys.argv)
-client = indiBase.Client('192.168.2.57')
+client = indiBase.Client('astro-mount.fritz.box')
 widget = IndiPythonBase(client)
 rc = app.exec_()
 sys.exit(rc)

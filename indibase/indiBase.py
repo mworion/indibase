@@ -121,7 +121,14 @@ class Device(object):
         return retDict
 
     def getBlob(self, propertyName):
-        return
+        # blob return different, because it's binary data
+        _property = getattr(self, propertyName)
+        if _property['propertyType'] not in ['defBLOBVector',
+                                             'setBLOBVector']:
+            self.logger.error('Property: {0} is not Blob'.format(_property['propertyType']))
+            return
+        propList = _property['property']
+        return propList[propertyName]
 
 
 class Client(PyQt5.QtCore.QObject):
@@ -655,7 +662,10 @@ class Client(PyQt5.QtCore.QObject):
                 name = elt.attr['name']
                 element[name] = {}
                 element[name]['elementType'] = elt.etype
+                # as a new blob vector does not  contain an initial value, we have to
+                # separate this
                 if not isinstance(elt, indiXML.DefBLOB):
+                    # depending on the vector type, different value types are used
                     if elt.etype in ['defNumber',
                                      'setNumber',
                                      'oneNumber']:
@@ -666,7 +676,7 @@ class Client(PyQt5.QtCore.QObject):
                         element[name]['value'] = (elt.getValue() == 'On')
                     else:
                         element[name]['value'] = elt.getValue()
-                # now all attributes of element
+                # now all other attributes of element are stored
                 for attr in elt.attr:
                     element[name][attr] = elt.attr[attr]
             # do signals
@@ -683,7 +693,6 @@ class Client(PyQt5.QtCore.QObject):
             elif isinstance(chunk, indiXML.SetSwitchVector):
                 self.signals.newSwitch.emit(deviceName, _property)
             elif isinstance(chunk, indiXML.SetNumberVector):
-                # print(chunk)
                 self.signals.newNumber.emit(deviceName, _property)
             elif isinstance(chunk, indiXML.SetTextVector):
                 self.signals.newText.emit(deviceName, _property)
@@ -693,6 +702,7 @@ class Client(PyQt5.QtCore.QObject):
                 self.signals.newMessage.emit(deviceName, _property)
         else:
             # todo: here are still the active devices, which are not handled
+            # question: do we miss something here ?
             pass
             # print(chunk.attr)
 
@@ -710,7 +720,7 @@ class Client(PyQt5.QtCore.QObject):
         buf = self.socket.readAll()
         self.parser.feed(buf)
         for event, elem in self.parser.read_events():
-            # print(self.curDepth, event, elem.tag, elem.keys(), '\n')
+            # print(self.curDepth, event, elem.tag, elem.items(), '\n')
             if event == 'start':
                 self.curDepth += 1
             elif event == 'end':
@@ -719,7 +729,7 @@ class Client(PyQt5.QtCore.QObject):
                 self.logger.error('Problem parsing event: {0}'.format(event))
             if self.curDepth > 0:
                 continue
-            # print('Parsed ', elem.tag)
+            # print('Depth: ', self.curDepth, '  Parsed: ', elem.items())
             elem = indiXML.parseETree(elem)
             self._dispatchCmd(elem)
 
