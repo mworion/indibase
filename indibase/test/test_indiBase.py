@@ -56,7 +56,7 @@ def test_watchDevice1():
                                                       'device': 'test'})
     ret_val = True
     with mock.patch.object(test,
-                           'sendCmd',
+                           '_sendCmd',
                            return_value=ret_val):
         test.watchDevice('test')
         call_val = test._sendCmd.call_args_list[0][0][0]
@@ -69,7 +69,7 @@ def test_watchDevice2():
                                                       'device': ''})
     ret_val = True
     with mock.patch.object(test,
-                           'sendCmd',
+                           '_sendCmd',
                            return_value=ret_val):
         test.watchDevice()
         call_val = test._sendCmd.call_args_list[0][0][0]
@@ -271,7 +271,7 @@ def test_setBlobMode1():
     QTest.qWait(500)
     ret_val = True
     with mock.patch.object(test,
-                           'sendCmd',
+                           '_sendCmd',
                            return_value=ret_val):
         suc = test.setBlobMode('Never',
                                'CCD Simulator',
@@ -292,7 +292,7 @@ def test_setBlobMode2():
     QTest.qWait(500)
     ret_val = True
     with mock.patch.object(test,
-                           'sendCmd',
+                           '_sendCmd',
                            return_value=ret_val):
         suc = test.setBlobMode(deviceName='CCD Simulator',
                                propertyName='blob')
@@ -312,7 +312,7 @@ def test_setBlobMode3():
     QTest.qWait(500)
     ret_val = True
     with mock.patch.object(test,
-                           'sendCmd',
+                           '_sendCmd',
                            return_value=ret_val):
         suc = test.setBlobMode(deviceName='',
                                propertyName='blob')
@@ -347,7 +347,7 @@ def test_sendNewText1():
     QTest.qWait(500)
     ret_val = True
     with mock.patch.object(test,
-                           'sendCmd',
+                           '_sendCmd',
                            return_value=ret_val):
         suc = test.sendNewText(deviceName='CCD Simulator',
                                propertyName='anna',
