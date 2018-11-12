@@ -79,7 +79,7 @@ def test_watchDevice2():
 def test_connectServer1(qtbot):
 
     test.setServer('')
-    with qtbot.assertNotEmitted(test.signals.serverConnected) as blocker:
+    with qtbot.assertNotEmitted(test.signals.serverConnected):
         suc = test.connectServer()
         assert not suc
 
@@ -108,7 +108,7 @@ def test_connectServer3(qtbot):
 def test_disconnectServer1(qtbot):
 
     test.setServer('')
-    with qtbot.assertNotEmitted(test.signals.serverDisconnected) as blocker:
+    with qtbot.assertNotEmitted(test.signals.serverDisconnected):
         suc = test.disconnectServer()
         assert suc
 
@@ -126,7 +126,7 @@ def test_disconnectServer2(qtbot):
 def test_disconnectServer3(qtbot):
 
     test.setServer('localhost')
-    with qtbot.assertNotEmitted(test.signals.serverDisconnected) as blocker:
+    with qtbot.assertNotEmitted(test.signals.serverDisconnected):
         suc = test.disconnectServer()
         assert suc
 
@@ -305,9 +305,6 @@ def test_setBlobMode2():
 def test_setBlobMode3():
     test.setServer('localhost')
     test.connectServer()
-    call_ref = indiXML.enableBLOB('Never',
-                                  indi_attr={'name': 'blob',
-                                             'device': 'CCD Simulator'})
     test.watchDevice('CCD Simulator')
     QTest.qWait(500)
     ret_val = True
