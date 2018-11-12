@@ -59,7 +59,7 @@ def test_watchDevice1():
                            'sendCmd',
                            return_value=ret_val):
         test.watchDevice('test')
-        call_val = test.sendCmd.call_args_list[0][0][0]
+        call_val = test._sendCmd.call_args_list[0][0][0]
         assert call_ref.toXML() == call_val.toXML()
 
 
@@ -72,7 +72,7 @@ def test_watchDevice2():
                            'sendCmd',
                            return_value=ret_val):
         test.watchDevice()
-        call_val = test.sendCmd.call_args_list[0][0][0]
+        call_val = test._sendCmd.call_args_list[0][0][0]
         assert call_ref.toXML() == call_val.toXML()
 
 
@@ -277,7 +277,7 @@ def test_setBlobMode1():
                                'CCD Simulator',
                                'blob')
         assert suc
-        call_val = test.sendCmd.call_args_list[0][0][0]
+        call_val = test._sendCmd.call_args_list[0][0][0]
         assert call_ref.toXML() == call_val.toXML()
     test.disconnectServer()
 
@@ -297,7 +297,7 @@ def test_setBlobMode2():
         suc = test.setBlobMode(deviceName='CCD Simulator',
                                propertyName='blob')
         assert suc
-        call_val = test.sendCmd.call_args_list[0][0][0]
+        call_val = test._sendCmd.call_args_list[0][0][0]
         assert call_ref.toXML() == call_val.toXML()
     test.disconnectServer()
 
@@ -354,7 +354,7 @@ def test_sendNewText1():
                                elements='blob',
                                text='TEST')
         assert suc
-        call_val = test.sendCmd.call_args_list[0][0][0]
+        call_val = test._sendCmd.call_args_list[0][0][0]
         assert call_ref.toXML() == call_val.toXML()
     test.disconnectServer()
 

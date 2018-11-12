@@ -173,8 +173,7 @@ class Client(PyQt5.QtCore.QObject):
                'finishBlob',
                'setVerbose',
                'isVerbose',
-               'setConnectionTimeout'
-               'sendCmd',
+               'setConnectionTimeout',
                ]
 
     version = '0.1'
@@ -198,6 +197,7 @@ class Client(PyQt5.QtCore.QObject):
 
     # default port indi servers
     DEFAULT_PORT = 7624
+
     # timeout for client to server
     CONNECTION_TIMEOUT = 2000
 
@@ -205,8 +205,8 @@ class Client(PyQt5.QtCore.QObject):
                  host=None,
                  ):
         super().__init__()
-        # parameters
         self.host = host
+
         # instance variables
         self.signals = INDISignals()
         self.connected = False
@@ -214,10 +214,12 @@ class Client(PyQt5.QtCore.QObject):
         self.blobMode = 'Never'
         self.devices = dict()
         self.curDepth = 0
+
         # tcp handling
         self.socket = PyQt5.QtNetwork.QTcpSocket()
         self.socket.readyRead.connect(self._handleReadyRead)
         self.socket.error.connect(self._handleError)
+
         # XML parser
         self.parser = xml.etree.ElementTree.XMLPullParser(['start', 'end'])
         self.parser.feed('<root>')
@@ -265,12 +267,12 @@ class Client(PyQt5.QtCore.QObject):
         adds a device to the watchlist. if the device name is empty, all traffic for all
         devices will be watched and therefore received
 
-        :param deviceName: device name
+        :param deviceName: name string of INDI device
         :return: success for test purpose
         """
         cmd = indiXML.clientGetProperties(indi_attr={'version': '1.7',
                                                      'device': deviceName})
-        val = self.sendCmd(cmd)
+        val = self._sendCmd(cmd)
         return val
 
     def connectServer(self):
@@ -321,6 +323,7 @@ class Client(PyQt5.QtCore.QObject):
         """
         Part of BASE CLIENT API of EKOS
 
+        :param deviceName: name string of INDI device
         :return: success
         """
 
@@ -338,6 +341,7 @@ class Client(PyQt5.QtCore.QObject):
         """
         Part of BASE CLIENT API of EKOS
 
+        :param deviceName: name string of INDI device
         :return: success
         """
 
@@ -355,6 +359,7 @@ class Client(PyQt5.QtCore.QObject):
 
     def getDevice(self, deviceName=''):
         """
+        Part of BASE CLIENT API of EKOS
         getDevice collects all the data of the given device
 
         :param deviceName: name of device
@@ -365,6 +370,7 @@ class Client(PyQt5.QtCore.QObject):
 
     def getDevices(self, driverInterface):
         """
+        Part of BASE CLIENT API of EKOS
         getDevices generates a list of devices, which are from type of the given
         driver interface type.
 
@@ -383,8 +389,8 @@ class Client(PyQt5.QtCore.QObject):
         Part of BASE CLIENT API of EKOS
 
         :param blobHandling:
-        :param deviceName:
-        :param propertyName:
+        :param deviceName: name string of INDI device
+        :param propertyName: name string of device property
         :return: true if server connected
         """
 
@@ -396,15 +402,15 @@ class Client(PyQt5.QtCore.QObject):
                                  indi_attr={'name': propertyName,
                                             'device': deviceName})
         self.blobMode = blobHandling
-        val = self.sendCmd(cmd)
+        val = self._sendCmd(cmd)
         return val
 
     def getBlobMode(self, deviceName='', propertyName=''):
         """
         Part of BASE CLIENT API of EKOS
 
-        :param deviceName:
-        :param propertyName:
+        :param deviceName: name string of INDI device
+        :param propertyName: name string of device property
         :return: true if server connected
         """
 
@@ -430,8 +436,8 @@ class Client(PyQt5.QtCore.QObject):
         """
         Part of BASE CLIENT API of EKOS
 
-        :param deviceName:
-        :param propertyName:
+        :param deviceName: name string of INDI device
+        :param propertyName: name string of device property
         :param elements: element name or dict of element name / values
         :param text: string in case of having only one element in elements
         :return: success for test
@@ -453,15 +459,15 @@ class Client(PyQt5.QtCore.QObject):
         cmd = indiXML.newTextVector(elementList,
                                     indi_attr={'name': propertyName,
                                                'device': deviceName})
-        val = self.sendCmd(cmd)
+        val = self._sendCmd(cmd)
         return val
 
     def sendNewNumber(self, deviceName='', propertyName='', elements='', number=0):
         """
         Part of BASE CLIENT API of EKOS
 
-        :param deviceName:
-        :param propertyName:
+        :param deviceName: name string of INDI device
+        :param propertyName: name string of device property
         :param elements: element name or dict of element name / values
         :param number: value in case of having only one element in elements
         :return: success for test
@@ -483,15 +489,15 @@ class Client(PyQt5.QtCore.QObject):
         cmd = indiXML.newNumberVector(elementList,
                                       indi_attr={'name': propertyName,
                                                  'device': deviceName})
-        val = self.sendCmd(cmd)
+        val = self._sendCmd(cmd)
         return val
 
     def sendNewSwitch(self, deviceName='', propertyName='', elements=''):
         """
         Part of BASE CLIENT API of EKOS
 
-        :param deviceName:
-        :param propertyName:
+        :param deviceName: name string of INDI device
+        :param propertyName: name string of device property
         :param elements: element name or dict of element name / values
         :return: success for test
         """
@@ -512,7 +518,7 @@ class Client(PyQt5.QtCore.QObject):
         cmd = indiXML.newSwitchVector(elementList,
                                       indi_attr={'name': propertyName,
                                                  'device': deviceName})
-        val = self.sendCmd(cmd)
+        val = self._sendCmd(cmd)
         return val
 
     def startBlob(self, deviceName='', propertyName='', timestamp=''):
@@ -567,7 +573,7 @@ class Client(PyQt5.QtCore.QObject):
         self.CONNECTION_TIMEOUT = seconds + microseconds / 1000000
         return True
 
-    def sendCmd(self, indiCommand):
+    def _sendCmd(self, indiCommand):
         """
         sendCmd take an XML indi command, converts it and sends it over the network and
         flushes the buffer
