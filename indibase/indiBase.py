@@ -60,6 +60,11 @@ class Device(object):
 
     __all__ = ['Device',
                'version',
+               'getNumber',
+               'getText',
+               'getSwitch',
+               'getLight',
+               'getBlob',
                ]
 
     version = '0.1'
@@ -312,7 +317,7 @@ class Client(PyQt5.QtCore.QObject):
 
         return self.connected
 
-    def connectDevice(self, deviceName):
+    def connectDevice(self, deviceName=''):
         """
         Part of BASE CLIENT API of EKOS
 
@@ -329,7 +334,7 @@ class Client(PyQt5.QtCore.QObject):
                                  )
         return val
 
-    def disconnectDevice(self, deviceName):
+    def disconnectDevice(self, deviceName=''):
         """
         Part of BASE CLIENT API of EKOS
 
@@ -348,7 +353,7 @@ class Client(PyQt5.QtCore.QObject):
                                  )
         return val
 
-    def getDevice(self, deviceName):
+    def getDevice(self, deviceName=''):
         """
         getDevice collects all the data of the given device
 
@@ -394,7 +399,7 @@ class Client(PyQt5.QtCore.QObject):
         val = self.sendCmd(cmd)
         return val
 
-    def getBlobMode(self, deviceName='', propertyName=None):
+    def getBlobMode(self, deviceName='', propertyName=''):
         """
         Part of BASE CLIENT API of EKOS
 
@@ -428,25 +433,7 @@ class Client(PyQt5.QtCore.QObject):
         :param deviceName:
         :param propertyName:
         :param elements: element name or dict of element name / values
-        :param text:
-        :return: success for test
-        """
-        cmd = indiXML.newTextVector([indiXML.oneText(text,
-                                                     indi_attr={'name': elements})
-                                     ],
-                                    indi_attr={'name': propertyName,
-                                               'device': deviceName})
-        val = self.sendCmd(cmd)
-        return val
-
-    def sendNewNumber(self, deviceName='', propertyName='', elements='', value=0):
-        """
-        Part of BASE CLIENT API of EKOS
-
-        :param deviceName:
-        :param propertyName:
-        :param elements: element name or dict of element name / values
-        :param value:
+        :param text: string in case of having only one element in elements
         :return: success for test
         """
 
@@ -457,13 +444,44 @@ class Client(PyQt5.QtCore.QObject):
         if isinstance(elements, dict):
             elementList = []
             for element in elements:
-                value = elements[element]
-                element = indiXML.oneNumber(value,
+                text = elements[element]
+                element = indiXML.oneNumber(text,
+                                            indi_attr={'name': element})
+                elementList.append(element)
+        else:
+            elementList = [indiXML.oneText(text, indi_attr={'name': elements})]
+
+        cmd = indiXML.newTextVector(elementList,
+                                    indi_attr={'name': propertyName,
+                                               'device': deviceName})
+        val = self.sendCmd(cmd)
+        return val
+
+    def sendNewNumber(self, deviceName='', propertyName='', elements='', number=0):
+        """
+        Part of BASE CLIENT API of EKOS
+
+        :param deviceName:
+        :param propertyName:
+        :param elements: element name or dict of element name / values
+        :param number: value in case of having only one element in elements
+        :return: success for test
+        """
+
+        if deviceName not in self.devices:
+            return False
+        if not hasattr(self.devices[deviceName], propertyName):
+            return False
+        if isinstance(elements, dict):
+            elementList = []
+            for element in elements:
+                number = elements[element]
+                element = indiXML.oneNumber(number,
                                             indi_attr={'name': element})
                 elementList.append(element)
 
         else:
-            elementList = [indiXML.oneNumber(value, indi_attr={'name': elements})]
+            elementList = [indiXML.oneNumber(number, indi_attr={'name': elements})]
 
         cmd = indiXML.newNumberVector(elementList,
                                       indi_attr={'name': propertyName,
@@ -481,15 +499,28 @@ class Client(PyQt5.QtCore.QObject):
         :return: success for test
         """
 
-        cmd = indiXML.newSwitchVector([indiXML.oneSwitch('On',
-                                                         indi_attr={'name': elements})
-                                       ],
+        if deviceName not in self.devices:
+            return False
+        if not hasattr(self.devices[deviceName], propertyName):
+            return False
+        if isinstance(elements, dict):
+            elementList = []
+            for element in elements:
+                switch = elements[element]
+                element = indiXML.oneNumber(switch,
+                                            indi_attr={'name': element})
+                elementList.append(element)
+
+        else:
+            elementList = [indiXML.oneSwitch('On', indi_attr={'name': elements})]
+
+        cmd = indiXML.newSwitchVector(elementList,
                                       indi_attr={'name': propertyName,
                                                  'device': deviceName})
         val = self.sendCmd(cmd)
         return val
 
-    def startBlob(self, deviceName, propertyName, timestamp):
+    def startBlob(self, deviceName='', propertyName='', timestamp=''):
         """
         Part of BASE CLIENT API of EKOS
 
@@ -497,7 +528,7 @@ class Client(PyQt5.QtCore.QObject):
         """
         pass
 
-    def sendOneBlob(self, blobName, blobSize, blobFormat, blobBuffer):
+    def sendOneBlob(self, blobName='', blobSize=0, blobFormat='', blobBuffer=None):
         """
         Part of BASE CLIENT API of EKOS
 
@@ -537,7 +568,9 @@ class Client(PyQt5.QtCore.QObject):
 
         :return:
         """
-        pass
+
+        self.CONNECTION_TIMEOUT = seconds + microseconds / 1000000
+        return True
 
     def sendCmd(self, indiCommand):
         """

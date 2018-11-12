@@ -62,7 +62,7 @@ class IndiPythonBase(PyQt5.QtWidgets.QWidget):
         vega = {'RA': (279.23473479 * 24.0) / 360.0, 'DEC': +38.78368896}
         self.client.sendNewNumber('Telescope Simulator',
                                   'EQUATORIAL_EOD_COORD',
-                                  value=vega)
+                                  number=vega)
 
         self.client.disconnectServer()
 
