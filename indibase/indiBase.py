@@ -427,7 +427,7 @@ class Client(PyQt5.QtCore.QObject):
 
         :param deviceName:
         :param propertyName:
-        :param elements:
+        :param elements: element name or dict of element name / values
         :param text:
         :return: success for test
         """
@@ -445,7 +445,7 @@ class Client(PyQt5.QtCore.QObject):
 
         :param deviceName:
         :param propertyName:
-        :param elements:
+        :param elements: element name or dict of element name / values
         :param value:
         :return: success for test
         """
@@ -477,7 +477,7 @@ class Client(PyQt5.QtCore.QObject):
 
         :param deviceName:
         :param propertyName:
-        :param elements:
+        :param elements: element name or dict of element name / values
         :return: success for test
         """
 
