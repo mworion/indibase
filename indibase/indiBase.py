@@ -450,7 +450,6 @@ class Client(PyQt5.QtCore.QObject):
                 elementList.append(element)
         else:
             elementList = [indiXML.oneText(text, indi_attr={'name': elements})]
-
         cmd = indiXML.newTextVector(elementList,
                                     indi_attr={'name': propertyName,
                                                'device': deviceName})
@@ -479,10 +478,8 @@ class Client(PyQt5.QtCore.QObject):
                 element = indiXML.oneNumber(number,
                                             indi_attr={'name': element})
                 elementList.append(element)
-
         else:
             elementList = [indiXML.oneNumber(number, indi_attr={'name': elements})]
-
         cmd = indiXML.newNumberVector(elementList,
                                       indi_attr={'name': propertyName,
                                                  'device': deviceName})
@@ -510,10 +507,8 @@ class Client(PyQt5.QtCore.QObject):
                 element = indiXML.oneNumber(switch,
                                             indi_attr={'name': element})
                 elementList.append(element)
-
         else:
             elementList = [indiXML.oneSwitch('On', indi_attr={'name': elements})]
-
         cmd = indiXML.newSwitchVector(elementList,
                                       indi_attr={'name': propertyName,
                                                  'device': deviceName})
