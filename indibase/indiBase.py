@@ -626,7 +626,7 @@ class Client(PyQt5.QtCore.QObject):
         """
 
         for deviceName in self.devices:
-            self.devices[deviceName] = None
+            delattr(self.devices, deviceName)
             self.signals.removeDevice.emit(deviceName)
         self.devices = {}
         return True
