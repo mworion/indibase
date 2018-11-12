@@ -351,7 +351,7 @@ def test_sendNewText1():
                            return_value=ret_val):
         suc = test.sendNewText(deviceName='CCD Simulator',
                                propertyName='anna',
-                               elementName='blob',
+                               elements='blob',
                                text='TEST')
         assert suc
         call_val = test.sendCmd.call_args_list[0][0][0]

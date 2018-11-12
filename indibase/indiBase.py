@@ -325,7 +325,7 @@ class Client(PyQt5.QtCore.QObject):
             return False
         val = self.sendNewSwitch(deviceName=deviceName,
                                  propertyName='CONNECTION',
-                                 elementName='CONNECT',
+                                 elements='CONNECT',
                                  )
         return val
 
@@ -344,7 +344,7 @@ class Client(PyQt5.QtCore.QObject):
             return False
         val = self.sendNewSwitch(deviceName=deviceName,
                                  propertyName='CONNECTION',
-                                 elementName='DISCONNECT',
+                                 elements='DISCONNECT',
                                  )
         return val
 
@@ -421,18 +421,18 @@ class Client(PyQt5.QtCore.QObject):
         """
         return self._host[1]
 
-    def sendNewText(self, deviceName='', propertyName='', elementName='', text=''):
+    def sendNewText(self, deviceName='', propertyName='', elements='', text=''):
         """
         Part of BASE CLIENT API of EKOS
 
         :param deviceName:
         :param propertyName:
-        :param elementName:
+        :param elements:
         :param text:
         :return: success for test
         """
         cmd = indiXML.newTextVector([indiXML.oneText(text,
-                                                     indi_attr={'name': elementName})
+                                                     indi_attr={'name': elements})
                                      ],
                                     indi_attr={'name': propertyName,
                                                'device': deviceName})
@@ -471,18 +471,18 @@ class Client(PyQt5.QtCore.QObject):
         val = self.sendCmd(cmd)
         return val
 
-    def sendNewSwitch(self, deviceName='', propertyName='', elementName=''):
+    def sendNewSwitch(self, deviceName='', propertyName='', elements=''):
         """
         Part of BASE CLIENT API of EKOS
 
         :param deviceName:
         :param propertyName:
-        :param elementName:
+        :param elements:
         :return: success for test
         """
 
         cmd = indiXML.newSwitchVector([indiXML.oneSwitch('On',
-                                                         indi_attr={'name': elementName})
+                                                         indi_attr={'name': elements})
                                        ],
                                       indi_attr={'name': propertyName,
                                                  'device': deviceName})
@@ -616,7 +616,7 @@ class Client(PyQt5.QtCore.QObject):
         if deviceName not in self.devices:
             self.devices[deviceName] = Device(deviceName)
             self.signals.newDevice.emit(deviceName)
-        rawDev = self.devices[deviceName]
+        device = self.devices[deviceName]
 
         # deleting properties from devices
         if isinstance(chunk, indiXML.DelProperty):
@@ -625,8 +625,8 @@ class Client(PyQt5.QtCore.QObject):
             if 'name' not in chunk.attr:
                 return False
             delProperty = chunk.attr['name']
-            if hasattr(rawDev, delProperty):
-                delattr(rawDev, delProperty)
+            if hasattr(device, delProperty):
+                delattr(device, delProperty)
                 self.signals.removeProperty.emit(deviceName, delProperty)
 
         if isinstance(chunk, (indiXML.SetBLOBVector,
@@ -643,15 +643,15 @@ class Client(PyQt5.QtCore.QObject):
                       ):
             if 'name' not in chunk.attr:
                 return False
-            _property = chunk.attr['name']
-            if not hasattr(rawDev, _property):
+            iProperty = chunk.attr['name']
+            if not hasattr(device, iProperty):
                 # set property (SetSwitchVector etc.)
-                setattr(rawDev, _property, {})
+                setattr(device, iProperty, {})
             # shortening for readability
-            prop = getattr(rawDev, _property)
+            prop = getattr(device, iProperty)
             # add property type
             prop['propertyType'] = chunk.etype
-            # add attributes to _property
+            # add attributes to iProperty
             for vecAttr in chunk.attr:
                 prop[vecAttr] = chunk.attr.get(vecAttr)
             # adding subspace for atomic elements (text, switch, etc)
@@ -689,19 +689,19 @@ class Client(PyQt5.QtCore.QObject):
                                   indiXML.DefNumberVector,
                                   )
                           ):
-                self.signals.newProperty.emit(deviceName, _property)
+                self.signals.newProperty.emit(deviceName, iProperty)
             elif isinstance(chunk, indiXML.SetBLOBVector):
-                self.signals.newBLOB.emit(deviceName, _property)
+                self.signals.newBLOB.emit(deviceName, iProperty)
             elif isinstance(chunk, indiXML.SetSwitchVector):
-                self.signals.newSwitch.emit(deviceName, _property)
+                self.signals.newSwitch.emit(deviceName, iProperty)
             elif isinstance(chunk, indiXML.SetNumberVector):
-                self.signals.newNumber.emit(deviceName, _property)
+                self.signals.newNumber.emit(deviceName, iProperty)
             elif isinstance(chunk, indiXML.SetTextVector):
-                self.signals.newText.emit(deviceName, _property)
+                self.signals.newText.emit(deviceName, iProperty)
             elif isinstance(chunk, indiXML.SetLightVector):
-                self.signals.newLight.emit(deviceName, _property)
+                self.signals.newLight.emit(deviceName, iProperty)
             elif isinstance(chunk, indiXML.SetMessageVector):
-                self.signals.newMessage.emit(deviceName, _property)
+                self.signals.newMessage.emit(deviceName, iProperty)
         else:
             # todo: here are still the active devices, which are not handled ???
             pass
