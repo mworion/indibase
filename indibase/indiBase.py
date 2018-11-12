@@ -567,7 +567,7 @@ class Client(PyQt5.QtCore.QObject):
         """
         Part of BASE CLIENT API of EKOS
 
-        :return:
+        :return: success for test purpose
         """
 
         self.CONNECTION_TIMEOUT = seconds + microseconds / 1000000
@@ -771,6 +771,7 @@ class Client(PyQt5.QtCore.QObject):
     def _handleError(self, socketError):
         """
         _handleError log all network errors in case of problems.
+
         :param socketError: the error from socket library
         :return: nothing
         """
