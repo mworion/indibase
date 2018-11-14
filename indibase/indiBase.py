@@ -78,6 +78,12 @@ class Device(object):
         self.name = name
 
     def getNumber(self, propertyName):
+        """
+
+        :param propertyName:
+        :return:
+        """
+
         _property = getattr(self, propertyName)
         if _property['propertyType'] not in ['defNumberVector',
                                              'setNumberVector']:
@@ -447,15 +453,14 @@ class Client(PyQt5.QtCore.QObject):
             return False
         if not hasattr(self.devices[deviceName], propertyName):
             return False
-        if isinstance(elements, dict):
-            elementList = []
-            for element in elements:
-                text = elements[element]
-                element = indiXML.oneNumber(text,
-                                            indi_attr={'name': element})
-                elementList.append(element)
-        else:
-            elementList = [indiXML.oneText(text, indi_attr={'name': elements})]
+        if not isinstance(elements, dict):
+            elements = {elements: text}
+        elementList = []
+        for element in elements:
+            text = elements[element]
+            element = indiXML.oneNumber(text,
+                                        indi_attr={'name': element})
+            elementList.append(element)
         cmd = indiXML.newTextVector(elementList,
                                     indi_attr={'name': propertyName,
                                                'device': deviceName})
@@ -477,15 +482,14 @@ class Client(PyQt5.QtCore.QObject):
             return False
         if not hasattr(self.devices[deviceName], propertyName):
             return False
-        if isinstance(elements, dict):
-            elementList = []
-            for element in elements:
-                number = elements[element]
-                element = indiXML.oneNumber(number,
-                                            indi_attr={'name': element})
-                elementList.append(element)
-        else:
-            elementList = [indiXML.oneNumber(number, indi_attr={'name': elements})]
+        if not isinstance(elements, dict):
+            elements = {elements: number}
+        elementList = []
+        for element in elements:
+            number = elements[element]
+            element = indiXML.oneNumber(number,
+                                        indi_attr={'name': element})
+            elementList.append(element)
         cmd = indiXML.newNumberVector(elementList,
                                       indi_attr={'name': propertyName,
                                                  'device': deviceName})
@@ -506,15 +510,14 @@ class Client(PyQt5.QtCore.QObject):
             return False
         if not hasattr(self.devices[deviceName], propertyName):
             return False
-        if isinstance(elements, dict):
-            elementList = []
-            for element in elements:
-                switch = elements[element]
-                element = indiXML.oneNumber(switch,
-                                            indi_attr={'name': element})
-                elementList.append(element)
-        else:
-            elementList = [indiXML.oneSwitch('On', indi_attr={'name': elements})]
+        if not isinstance(elements, dict):
+            elements = {elements: 'On'}
+        elementList = []
+        for element in elements:
+            switch = elements[element]
+            element = indiXML.oneNumber(switch,
+                                        indi_attr={'name': element})
+            elementList.append(element)
         cmd = indiXML.newSwitchVector(elementList,
                                       indi_attr={'name': propertyName,
                                                  'device': deviceName})

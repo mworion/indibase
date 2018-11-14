@@ -16,10 +16,12 @@
 import sys
 import logging
 import time
+import zlib
 # external packages
 import PyQt5
 import PyQt5.QtWidgets
 from PyQt5.QtTest import QTest
+from astropy.io import fits
 # local import
 from indibase import indiBase
 from indibase import indiXML
@@ -68,6 +70,10 @@ class IndiPythonBase(PyQt5.QtWidgets.QWidget):
             print('new device: ', deviceName)
 
     def doExpose(self):
+        suc = self.client.sendNewSwitch(deviceName='CCD Simulator',
+                                        propertyName='CCD_COMPRESSION',
+                                        elementName='CCD_COMPRESS')
+
         number = self.ccdDevice.getNumber('CCD_EXPOSURE')
         number['CCD_EXPOSURE_VALUE'] = 1
         suc = self.client.sendNewNumber(deviceName='CCD Simulator',
@@ -87,10 +93,16 @@ class IndiPythonBase(PyQt5.QtWidgets.QWidget):
         print('got blob ')
         if deviceName == 'CCD Simulator':
             blob = self.ccdDevice.getBlob(propertyName=deviceProperty)
-            """
-            imageHDU = pyfits.HDUList.fromstring(blob['value'])
+            if blob['format'] == '.fits':
+                value = blob['value']
+            elif blob['format'] == '.fi':
+                value = zlib.decompress(blob['value'])
+            else:
+                print('format not known')
+                return
+            imageHDU = fits.HDUList.fromstring(value)
             imageHDU.writeto(self.imagePath, overwrite=True)
-            """
+
     def quit(self):
         self.client.disconnectServer()
         self.close()
