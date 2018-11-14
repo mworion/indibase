@@ -458,9 +458,11 @@ class Client(PyQt5.QtCore.QObject):
         elementList = []
         for element in elements:
             text = elements[element]
-            element = indiXML.oneNumber(text,
-                                        indi_attr={'name': element})
-            elementList.append(element)
+            elementList.append(
+                indiXML.oneText(text,
+                                indi_attr={'name': element}
+                                )
+            )
         cmd = indiXML.newTextVector(elementList,
                                     indi_attr={'name': propertyName,
                                                'device': deviceName})
@@ -487,9 +489,11 @@ class Client(PyQt5.QtCore.QObject):
         elementList = []
         for element in elements:
             number = elements[element]
-            element = indiXML.oneNumber(number,
-                                        indi_attr={'name': element})
-            elementList.append(element)
+            elementList.append(
+                indiXML.oneNumber(number,
+                                  indi_attr={'name': element}
+                                  )
+            )
         cmd = indiXML.newNumberVector(elementList,
                                       indi_attr={'name': propertyName,
                                                  'device': deviceName})
@@ -515,9 +519,11 @@ class Client(PyQt5.QtCore.QObject):
         elementList = []
         for element in elements:
             switch = elements[element]
-            element = indiXML.oneNumber(switch,
-                                        indi_attr={'name': element})
-            elementList.append(element)
+            elementList.append(
+                indiXML.oneSwitch(switch,
+                                  indi_attr={'name': element}
+                                  )
+            )
         cmd = indiXML.newSwitchVector(elementList,
                                       indi_attr={'name': propertyName,
                                                  'device': deviceName})
@@ -629,7 +635,6 @@ class Client(PyQt5.QtCore.QObject):
         """
 
         for deviceName in self.devices:
-            delattr(self.devices, deviceName)
             self.signals.removeDevice.emit(deviceName)
         self.devices = {}
         return True

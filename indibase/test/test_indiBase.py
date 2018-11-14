@@ -159,7 +159,11 @@ def test_connectDevice1():
 def test_connectDevice2():
 
     test.setServer('localhost')
-    test.connectServer()
+    suc = test.connectServer()
+    assert suc
+    suc = test.watchDevice('CCD Simulator')
+    assert suc
+    QTest.qWait(500)
     suc = test.connectDevice('CCD Simulator')
     assert suc
     test.disconnectServer()
@@ -177,9 +181,11 @@ def test_disconnectDevice1():
     test.setServer('localhost')
     suc = test.connectServer()
     assert suc
-    suc = test.connectDevice('CCD Simulator')
+    suc = test.watchDevice('CCD Simulator')
     assert suc
     QTest.qWait(500)
+    suc = test.connectDevice('CCD Simulator')
+    assert suc
     suc = test.disconnectDevice('CCD Simulator')
     assert suc
     test.disconnectServer()
@@ -190,6 +196,9 @@ def test_disconnectDevice2():
     test.setServer('localhost')
     suc = test.connectServer()
     assert suc
+    suc = test.watchDevice('CCD Simulator')
+    assert suc
+    QTest.qWait(500)
     suc = test.connectDevice('CCD Simulator')
     assert suc
     suc = test.disconnectDevice('')
@@ -202,6 +211,9 @@ def test_disconnectDevice3():
     test.setServer('localhost')
     suc = test.connectServer()
     assert suc
+    suc = test.watchDevice('CCD Simulator')
+    assert suc
+    QTest.qWait(500)
     suc = test.connectDevice('CCD Simulator')
     assert suc
     suc = test.disconnectDevice('Test')
@@ -340,14 +352,42 @@ def test_sendNewText1():
                                       ],
                                      indi_attr={'name': 'anna',
                                                 'device': 'CCD Simulator'})
-    test.watchDevice('CCD Simulator')
+    suc = test.watchDevice('CCD Simulator')
+    assert suc
     QTest.qWait(500)
+    suc = test.connectDevice('CCD Simulator')
+    assert suc
     ret_val = True
     with mock.patch.object(test,
                            '_sendCmd',
                            return_value=ret_val):
         suc = test.sendNewText(deviceName='CCD Simulator',
                                propertyName='anna',
+                               elements='blob',
+                               text='TEST')
+        assert not suc
+    test.disconnectServer()
+
+
+def test_sendNewText2():
+    test.setServer('localhost')
+    test.connectServer()
+    call_ref = indiXML.newTextVector([indiXML.oneText('TEST',
+                                                      indi_attr={'name': 'blob'})
+                                      ],
+                                     indi_attr={'name': 'CONNECTION',
+                                                'device': 'CCD Simulator'})
+    suc = test.watchDevice('CCD Simulator')
+    assert suc
+    QTest.qWait(500)
+    suc = test.connectDevice('CCD Simulator')
+    assert suc
+    ret_val = True
+    with mock.patch.object(test,
+                           '_sendCmd',
+                           return_value=ret_val):
+        suc = test.sendNewText(deviceName='CCD Simulator',
+                               propertyName='CONNECTION',
                                elements='blob',
                                text='TEST')
         assert suc
