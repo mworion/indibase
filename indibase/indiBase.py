@@ -84,7 +84,7 @@ class Device(object):
         setting an element list (number vector) in indi client.
 
         :param propertyName: string with name
-        :return:
+        :return: dict with number / number vector
         """
 
         iProperty = getattr(self, propertyName)
@@ -105,7 +105,7 @@ class Device(object):
         setting an element list (text vector) in indi client.
 
         :param propertyName: string with name
-        :return:
+        :return: dict with text or text vector
         """
 
         iProperty = getattr(self, propertyName)
@@ -126,7 +126,7 @@ class Device(object):
         setting an element list (switch vector) in indi client.
 
         :param propertyName: string with name
-        :return:
+        :return: dict with switch or switch vector
         """
 
         iProperty = getattr(self, propertyName)
@@ -147,7 +147,7 @@ class Device(object):
         setting an element list (light vector) in indi client.
 
         :param propertyName: string with name
-        :return:
+        :return: dict with light or light vector
         """
 
         iProperty = getattr(self, propertyName)
@@ -163,12 +163,11 @@ class Device(object):
 
     def getBlob(self, propertyName):
         """
-        getBlob extracts from the device dictionary the relevant property subset for
-        blob or list of blob elements. the return dict could be used later on for
-        setting an element list  vector) in indi client.
+        getBlob extracts from the device dictionary the relevant property value for
+        blob.
 
         :param propertyName: string with name
-        :return:
+        :return: return blob
         """
 
         # blob return different, because it's binary data
