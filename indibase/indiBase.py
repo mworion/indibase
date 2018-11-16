@@ -92,10 +92,10 @@ class Device(object):
                                              'setNumberVector']:
             self.logger.error('Property: {0} is not Number'.format(iProperty['propertyType']))
             return
-        propList = iProperty['property']
+        elementList = iProperty['property']
         retDict = {}
-        for prop in propList:
-            retDict[prop] = propList[prop]['value']
+        for prop in elementList:
+            retDict[prop] = elementList[prop]['value']
         return retDict
 
     def getText(self, propertyName):
@@ -113,10 +113,10 @@ class Device(object):
                                              'setTextVector']:
             self.logger.error('Property: {0} is not Text'.format(iProperty['propertyType']))
             return
-        propList = iProperty['property']
+        elementList = iProperty['property']
         retDict = {}
-        for prop in propList:
-            retDict[prop] = propList[prop]['value']
+        for prop in elementList:
+            retDict[prop] = elementList[prop]['value']
         return retDict
 
     def getSwitch(self, propertyName):
@@ -134,10 +134,10 @@ class Device(object):
                                              'setSwitchVector']:
             self.logger.error('Property: {0} is not Switch'.format(iProperty['propertyType']))
             return
-        propList = iProperty['property']
+        elementList = iProperty['property']
         retDict = {}
-        for prop in propList:
-            retDict[prop] = propList[prop]['value']
+        for prop in elementList:
+            retDict[prop] = elementList[prop]['value']
         return retDict
 
     def getLight(self, propertyName):
@@ -155,10 +155,10 @@ class Device(object):
                                              'setLightVector']:
             self.logger.error('Property: {0} is not Light'.format(iProperty['propertyType']))
             return
-        propList = iProperty['property']
+        elementList = iProperty['property']
         retDict = {}
-        for prop in propList:
-            retDict[prop] = propList[prop]['value']
+        for prop in elementList:
+            retDict[prop] = elementList[prop]['value']
         return retDict
 
     def getBlob(self, propertyName):
@@ -176,8 +176,8 @@ class Device(object):
                                              'setBLOBVector']:
             self.logger.error('Property: {0} is not Blob'.format(iProperty['propertyType']))
             return
-        propList = iProperty['property']
-        return propList[propertyName]
+        elementList = iProperty['property']
+        return elementList[propertyName]
 
 
 class Client(PyQt5.QtCore.QObject):
