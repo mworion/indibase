@@ -79,66 +79,105 @@ class Device(object):
 
     def getNumber(self, propertyName):
         """
+        getNumber extracts from the device dictionary the relevant property subset for
+        number or list of number elements. the return dict could be used later on for
+        setting an element list (number vector) in indi client.
 
-        :param propertyName:
+        :param propertyName: string with name
         :return:
         """
 
-        _property = getattr(self, propertyName)
-        if _property['propertyType'] not in ['defNumberVector',
+        iProperty = getattr(self, propertyName)
+        if iProperty['propertyType'] not in ['defNumberVector',
                                              'setNumberVector']:
-            self.logger.error('Property: {0} is not Number'.format(_property['propertyType']))
+            self.logger.error('Property: {0} is not Number'.format(iProperty['propertyType']))
             return
-        propList = _property['property']
+        propList = iProperty['property']
         retDict = {}
         for prop in propList:
             retDict[prop] = propList[prop]['value']
         return retDict
 
     def getText(self, propertyName):
-        _property = getattr(self, propertyName)
-        if _property['propertyType'] not in ['defTextVector',
+        """
+        getNumber extracts from the device dictionary the relevant property subset for
+        text or list of text elements. the return dict could be used later on for
+        setting an element list (text vector) in indi client.
+
+        :param propertyName: string with name
+        :return:
+        """
+
+        iProperty = getattr(self, propertyName)
+        if iProperty['propertyType'] not in ['defTextVector',
                                              'setTextVector']:
-            self.logger.error('Property: {0} is not Text'.format(_property['propertyType']))
+            self.logger.error('Property: {0} is not Text'.format(iProperty['propertyType']))
             return
-        propList = _property['property']
+        propList = iProperty['property']
         retDict = {}
         for prop in propList:
             retDict[prop] = propList[prop]['value']
         return retDict
 
     def getSwitch(self, propertyName):
-        _property = getattr(self, propertyName)
-        if _property['propertyType'] not in ['defSwitchVector',
+        """
+        getSwitch extracts from the device dictionary the relevant property subset for
+        switch or list of switch elements. the return dict could be used later on for
+        setting an element list (switch vector) in indi client.
+
+        :param propertyName: string with name
+        :return:
+        """
+
+        iProperty = getattr(self, propertyName)
+        if iProperty['propertyType'] not in ['defSwitchVector',
                                              'setSwitchVector']:
-            self.logger.error('Property: {0} is not Switch'.format(_property['propertyType']))
+            self.logger.error('Property: {0} is not Switch'.format(iProperty['propertyType']))
             return
-        propList = _property['property']
+        propList = iProperty['property']
         retDict = {}
         for prop in propList:
             retDict[prop] = propList[prop]['value']
         return retDict
 
     def getLight(self, propertyName):
-        _property = getattr(self, propertyName)
-        if _property['propertyType'] not in ['defLightVector',
+        """
+        getLight extracts from the device dictionary the relevant property subset for
+        light or list of light elements. the return dict could be used later on for
+        setting an element list (light vector) in indi client.
+
+        :param propertyName: string with name
+        :return:
+        """
+
+        iProperty = getattr(self, propertyName)
+        if iProperty['propertyType'] not in ['defLightVector',
                                              'setLightVector']:
-            self.logger.error('Property: {0} is not Light'.format(_property['propertyType']))
+            self.logger.error('Property: {0} is not Light'.format(iProperty['propertyType']))
             return
-        propList = _property['property']
+        propList = iProperty['property']
         retDict = {}
         for prop in propList:
             retDict[prop] = propList[prop]['value']
         return retDict
 
     def getBlob(self, propertyName):
+        """
+        getBlob extracts from the device dictionary the relevant property subset for
+        blob or list of blob elements. the return dict could be used later on for
+        setting an element list  vector) in indi client.
+
+        :param propertyName: string with name
+        :return:
+        """
+
         # blob return different, because it's binary data
-        _property = getattr(self, propertyName)
-        if _property['propertyType'] not in ['defBLOBVector',
+        iProperty = getattr(self, propertyName)
+        if iProperty['propertyType'] not in ['defBLOBVector',
                                              'setBLOBVector']:
-            self.logger.error('Property: {0} is not Blob'.format(_property['propertyType']))
+            self.logger.error('Property: {0} is not Blob'.format(iProperty['propertyType']))
             return
-        propList = _property['property']
+        propList = iProperty['property']
         return propList[propertyName]
 
 
