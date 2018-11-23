@@ -412,7 +412,7 @@ class Client(PyQt5.QtCore.QObject):
 
         return self.devices.get(deviceName, None)
 
-    def getDevices(self, driverInterface=0):
+    def getDevices(self, driverInterface=None):
         """
         Part of BASE CLIENT API of EKOS
         getDevices generates a list of devices, which are from type of the given
@@ -424,7 +424,11 @@ class Client(PyQt5.QtCore.QObject):
 
         deviceList = list()
         for deviceName in self.devices:
-            if self._getDriverInterface(deviceName) & driverInterface:
+            if driverInterface is not None:
+                typeCheck = self._getDriverInterface(deviceName) & driverInterface
+            else:
+                typeCheck = True
+            if typeCheck:
                 deviceList.append(deviceName)
         return deviceList
 
