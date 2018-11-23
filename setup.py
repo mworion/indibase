@@ -1,10 +1,10 @@
 # from distutils.core import setup
 from setuptools import setup
-import indibase.indiBase
+from indibase.indiBase import Client
 
 setup(
     name='indibase',
-    version=indibase.indiBase.version,
+    version=Client.version,
     packages=[
         'indibase',
     ],
