@@ -327,6 +327,10 @@ class Client(PyQt5.QtCore.QObject):
         :return: success
         """
 
+        if self._host is None:
+            return False
+        if len(self._host) != 2:
+            return False
         if self.connected:
             self.signals.serverConnected.emit()
             return True
@@ -470,6 +474,11 @@ class Client(PyQt5.QtCore.QObject):
 
         :return: host name as str
         """
+
+        if self._host is None:
+            return ''
+        if len(self._host) != 2:
+            return 0
         return self._host[0]
 
     def getPort(self):
@@ -478,6 +487,11 @@ class Client(PyQt5.QtCore.QObject):
 
         :return: port number as int
         """
+
+        if self._host is None:
+            return 0
+        if len(self._host) != 2:
+            return 0
         return self._host[1]
 
     def sendNewText(self, deviceName='', propertyName='', elements='', text=''):

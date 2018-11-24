@@ -33,25 +33,41 @@ test = indiBase.Client()
 #
 
 def test_setServer1():
-
     test.setServer()
     assert ('', 7624) == test.host
 
 
 def test_setServer2():
-
     test.setServer('heise.de')
     assert ('heise.de', 7624) == test.host
 
 
 def test_setServer3():
-
     test.setServer('heise.de', 7624)
     assert ('heise.de', 7624) == test.host
 
 
-def test_watchDevice1():
+def test_getHost_ok1():
+    test.setServer('heise.de', 7624)
+    assert test.getHost()
 
+
+def test_getHost_not_ok1():
+    test = indiBase.Client()
+    assert '' == test.getHost()
+
+
+def test_getPort_ok1():
+    test.setServer('heise.de', 7624)
+    assert test.getPort()
+
+
+def test_getPort_not_ok1():
+    test = indiBase.Client()
+    assert 0 == test.getPort()
+
+
+def test_watchDevice1():
     call_ref = indiXML.clientGetProperties(indi_attr={'version': '1.7',
                                                       'device': 'test'})
     ret_val = True
@@ -64,7 +80,6 @@ def test_watchDevice1():
 
 
 def test_watchDevice2():
-
     call_ref = indiXML.clientGetProperties(indi_attr={'version': '1.7',
                                                       'device': ''})
     ret_val = True
@@ -77,7 +92,6 @@ def test_watchDevice2():
 
 
 def test_connectServer1(qtbot):
-
     test.setServer('')
     with qtbot.assertNotEmitted(test.signals.serverConnected):
         suc = test.connectServer()
@@ -85,7 +99,6 @@ def test_connectServer1(qtbot):
 
 
 def test_connectServer2(qtbot):
-
     test.setServer('localhost')
     with qtbot.waitSignal(test.signals.serverConnected) as blocker:
         suc = test.connectServer()
@@ -95,7 +108,6 @@ def test_connectServer2(qtbot):
 
 
 def test_connectServer3(qtbot):
-
     test.setServer('localhost')
     test.connected = True
     with qtbot.waitSignal(test.signals.serverConnected) as blocker:
@@ -103,6 +115,12 @@ def test_connectServer3(qtbot):
         assert suc
     assert [] == blocker.args
     test.disconnectServer()
+
+
+def test_connectServer_not_ok1(qtbot):
+    test.setServer('')
+    suc = test.connectServer()
+    assert not suc
 
 
 def test_disconnectServer1(qtbot):
