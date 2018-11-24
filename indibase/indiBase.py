@@ -67,7 +67,7 @@ class Device(object):
                'getBlob',
                ]
 
-    version = '0.1'
+    version = '0.2'
     logger = logging.getLogger(__name__)
 
     def __init__(self,
@@ -243,7 +243,7 @@ class Client(PyQt5.QtCore.QObject):
     DEFAULT_PORT = 7624
 
     # timeout for client to server
-    CONNECTION_TIMEOUT = 2000
+    CONNECTION_TIMEOUT = 200
 
     def __init__(self,
                  host=None,
@@ -258,11 +258,13 @@ class Client(PyQt5.QtCore.QObject):
         self.blobMode = 'Never'
         self.devices = dict()
         self.curDepth = 0
+        self.indiUp = False
 
         # tcp handling
         self.socket = PyQt5.QtNetwork.QTcpSocket()
         self.socket.readyRead.connect(self._handleReadyRead)
         self.socket.error.connect(self._handleError)
+        self.socket.disconnected.connect(self._handleDisconnected)
 
         # XML parser
         self.parser = xml.etree.ElementTree.XMLPullParser(['start', 'end'])
@@ -337,7 +339,7 @@ class Client(PyQt5.QtCore.QObject):
         self.socket.connectToHost(*self._host)
         if not self.socket.waitForConnected(self.CONNECTION_TIMEOUT):
             self.connected = False
-            return False
+            return True
         self.connected = True
         self.signals.serverConnected.emit()
         return True
@@ -353,10 +355,21 @@ class Client(PyQt5.QtCore.QObject):
         if not self.connected:
             return True
         self.connected = False
-        self.socket.close()
+        self.socket.abort()
         self._clearDevices()
         self.signals.serverDisconnected.emit()
         return True
+
+    @PyQt5.QtCore.pyqtSlot()
+    def _handleDisconnected(self):
+        """
+        _handleDisconnected log all network errors in case of problems.
+
+        :return: nothing
+        """
+
+        self.logger.info('INDI client disconnected')
+        self.disconnectServer()
 
     def isServerConnected(self):
         """
@@ -366,6 +379,27 @@ class Client(PyQt5.QtCore.QObject):
         """
 
         return self.connected
+
+    def checkINDIServerUp(self):
+        """
+        checkINDIServerUp polls the host/port of the indi server and set the state and
+        signals for the status accordingly.
+
+        :return: nothing
+        """
+
+        client = socket.socket()
+        client.settimeout(self.CONNECTION_TIMEOUT)
+        try:
+            client.connect(self.host)
+        except Exception:
+            if self.indiUp:
+                self.indiUp = False
+        else:
+            if not self.indiUp:
+                self.indiUp = True
+        finally:
+            client.close()
 
     def connectDevice(self, deviceName=''):
         """
@@ -416,7 +450,7 @@ class Client(PyQt5.QtCore.QObject):
 
         return self.devices.get(deviceName, None)
 
-    def getDevices(self, driverInterface=None):
+    def getDevices(self, driverInterface=0xFFFF):
         """
         Part of BASE CLIENT API of EKOS
         getDevices generates a list of devices, which are from type of the given
@@ -428,10 +462,7 @@ class Client(PyQt5.QtCore.QObject):
 
         deviceList = list()
         for deviceName in self.devices:
-            if driverInterface is not None:
-                typeCheck = self._getDriverInterface(deviceName) & driverInterface
-            else:
-                typeCheck = True
+            typeCheck = self._getDriverInterface(deviceName) & driverInterface
             if typeCheck:
                 deviceList.append(deviceName)
         return deviceList
@@ -844,3 +875,4 @@ class Client(PyQt5.QtCore.QObject):
             return
         self.logger.warning('INDI client connection fault, error: {0}'.format(socketError))
         self.socket.close()
+

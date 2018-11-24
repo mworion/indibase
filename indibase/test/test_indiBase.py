@@ -22,15 +22,15 @@ from indibase import indiBase
 from indibase import indiXML
 
 app = PyQt5.QtWidgets.QApplication([])
-
 test = indiBase.Client()
-
+testServer = 'astro-mount.fritz.box'
 
 #
 #
 # testing main
 #
 #
+
 
 def test_setServer1():
     test.setServer()
@@ -52,6 +52,11 @@ def test_getHost_ok1():
     assert test.getHost()
 
 
+def test_getHost_ok2():
+    test.setServer('localhost')
+    assert 'localhost' == test.getHost()
+
+
 def test_getHost_not_ok1():
     test = indiBase.Client()
     assert '' == test.getHost()
@@ -60,6 +65,16 @@ def test_getHost_not_ok1():
 def test_getPort_ok1():
     test.setServer('heise.de', 7624)
     assert test.getPort()
+
+
+def test_getPort_ok2():
+    test.setServer('localhost')
+    assert 7624 == test.getPort()
+
+
+def test_getPort_ok3():
+    test.setServer('localhost', 3000)
+    assert 3000 == test.getPort()
 
 
 def test_getPort_not_ok1():
@@ -95,11 +110,12 @@ def test_connectServer1(qtbot):
     test.setServer('')
     with qtbot.assertNotEmitted(test.signals.serverConnected):
         suc = test.connectServer()
-        assert not suc
+        assert suc
+    test.disconnectServer()
 
 
 def test_connectServer2(qtbot):
-    test.setServer('localhost')
+    test.setServer(testServer)
     with qtbot.waitSignal(test.signals.serverConnected) as blocker:
         suc = test.connectServer()
         assert suc
@@ -108,7 +124,7 @@ def test_connectServer2(qtbot):
 
 
 def test_connectServer3(qtbot):
-    test.setServer('localhost')
+    test.setServer(testServer)
     test.connected = True
     with qtbot.waitSignal(test.signals.serverConnected) as blocker:
         suc = test.connectServer()
@@ -120,11 +136,10 @@ def test_connectServer3(qtbot):
 def test_connectServer_not_ok1(qtbot):
     test.setServer('')
     suc = test.connectServer()
-    assert not suc
+    assert suc
 
 
 def test_disconnectServer1(qtbot):
-
     test.setServer('')
     with qtbot.assertNotEmitted(test.signals.serverDisconnected):
         suc = test.disconnectServer()
@@ -132,7 +147,6 @@ def test_disconnectServer1(qtbot):
 
 
 def test_disconnectServer2(qtbot):
-
     test.setServer('localhost')
     test.connectServer()
     with qtbot.waitSignal(test.signals.serverDisconnected) as blocker:
@@ -142,15 +156,26 @@ def test_disconnectServer2(qtbot):
 
 
 def test_disconnectServer3(qtbot):
-
     test.setServer('localhost')
     with qtbot.assertNotEmitted(test.signals.serverDisconnected):
         suc = test.disconnectServer()
         assert suc
 
 
-def test_isServerConnected1():
+def test_disconnectServer4(qtbot):
+    test.setServer('localhost')
+    test.connectServer()
+    test.watchDevice('CCD Simulator')
+    QTest.qWait(500)
+    test.connectDevice('CCD Simulator')
+    with qtbot.waitSignal(test.signals.serverDisconnected):
+        with qtbot.waitSignal(test.signals.removeDevice) as b:
+            test.socket.abort()
+    assert ['CCD Simulator'] == b.args
+    assert 0 == len(test.devices)
 
+
+def test_isServerConnected1():
     test.setServer('localhost')
     test.connectServer()
     val = test.isServerConnected()
@@ -158,7 +183,6 @@ def test_isServerConnected1():
 
 
 def test_isServerConnected2():
-
     test.setServer('localhost')
     test.disconnectServer()
     val = test.isServerConnected()
@@ -166,7 +190,6 @@ def test_isServerConnected2():
 
 
 def test_connectDevice1():
-
     test.setServer('localhost')
     test.connectServer()
     suc = test.connectDevice('')
@@ -175,7 +198,6 @@ def test_connectDevice1():
 
 
 def test_connectDevice2():
-
     test.setServer('localhost')
     suc = test.connectServer()
     assert suc
@@ -188,14 +210,12 @@ def test_connectDevice2():
 
 
 def test_connectDevice3():
-
     test.setServer('localhost')
     suc = test.connectDevice('CCD Simulator')
     assert not suc
 
 
 def test_disconnectDevice1():
-
     test.setServer('localhost')
     suc = test.connectServer()
     assert suc
@@ -210,7 +230,6 @@ def test_disconnectDevice1():
 
 
 def test_disconnectDevice2():
-
     test.setServer('localhost')
     suc = test.connectServer()
     assert suc
@@ -225,7 +244,6 @@ def test_disconnectDevice2():
 
 
 def test_disconnectDevice3():
-
     test.setServer('localhost')
     suc = test.connectServer()
     assert suc
@@ -240,19 +258,16 @@ def test_disconnectDevice3():
 
 
 def test_disconnectDevice4():
-
     suc = test.disconnectDevice('CCD Simulator')
     assert not suc
 
 
 def test_getDevice1():
-
     dev = test.getDevice('')
     assert not dev
 
 
 def test_getDevice2():
-
     test.setServer('localhost')
     test.connectServer()
     test.watchDevice('CCD Simulator')
@@ -288,6 +303,17 @@ def test_getDevices3():
     test.setServer('localhost')
     val = test.getDevices(test.CCD_INTERFACE)
     assert not val
+    test.disconnectServer()
+
+
+def test_getDevices4():
+    test.setServer('localhost')
+    test.connectServer()
+    test.watchDevice('CCD Simulator')
+    QTest.qWait(500)
+    val = test.getDevices()
+    assert val
+    assert 'CCD Simulator' in val
     test.disconnectServer()
 
 
@@ -347,29 +373,9 @@ def test_setBlobMode3():
     test.disconnectServer()
 
 
-def test_getHost():
-    test.setServer('localhost')
-    assert 'localhost' == test.getHost()
-
-
-def test_getPort1():
-    test.setServer('localhost')
-    assert 7624 == test.getPort()
-
-
-def test_getPort2():
-    test.setServer('localhost', 3000)
-    assert 3000 == test.getPort()
-
-
 def test_sendNewText1():
     test.setServer('localhost')
     test.connectServer()
-    call_ref = indiXML.newTextVector([indiXML.oneText('TEST',
-                                                      indi_attr={'name': 'blob'})
-                                      ],
-                                     indi_attr={'name': 'anna',
-                                                'device': 'CCD Simulator'})
     suc = test.watchDevice('CCD Simulator')
     assert suc
     QTest.qWait(500)
