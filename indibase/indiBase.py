@@ -67,7 +67,7 @@ class Device(object):
                'getBlob',
                ]
 
-    version = '0.2'
+    version = '0.1'
     logger = logging.getLogger(__name__)
 
     def __init__(self,
@@ -220,7 +220,7 @@ class Client(PyQt5.QtCore.QObject):
                'setConnectionTimeout',
                ]
 
-    version = '0.1'
+    version = '0.2'
     logger = logging.getLogger(__name__)
 
     # INDI device types
