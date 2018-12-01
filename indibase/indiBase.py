@@ -30,7 +30,7 @@ class INDISignals(PyQt5.QtCore.QObject):
     """
 
     __all__ = ['INDISignals']
-    version = '0.1'
+    version = '0.2'
 
     newDevice = PyQt5.QtCore.pyqtSignal(str)
     removeDevice = PyQt5.QtCore.pyqtSignal(str)
@@ -44,6 +44,8 @@ class INDISignals(PyQt5.QtCore.QObject):
     newMessage = PyQt5.QtCore.pyqtSignal(str, str)
     serverConnected = PyQt5.QtCore.pyqtSignal()
     serverDisconnected = PyQt5.QtCore.pyqtSignal()
+    deviceConnected = PyQt5.QtCore.pyqtSignal(str)
+    deviceDisconnected = PyQt5.QtCore.pyqtSignal(str)
 
 
 class Device(object):
@@ -220,7 +222,7 @@ class Client(PyQt5.QtCore.QObject):
                'setConnectionTimeout',
                ]
 
-    version = '0.2'
+    version = '0.3'
     logger = logging.getLogger(__name__)
 
     # INDI device types
@@ -810,6 +812,13 @@ class Client(PyQt5.QtCore.QObject):
                 # now all other attributes of element are stored
                 for attr in elt.attr:
                     element[name][attr] = elt.attr[attr]
+                # send connected signal
+                if name == 'CONNECT' and elt.getValue() == 'On':
+                    self.signals.deviceConnected.emit(deviceName)
+                # send disconnected signal
+                if name == 'DISCONNECT' and elt.getValue() == 'On':
+                    self.signals.deviceDisconnected.emit(deviceName)
+
             # do signals
             if isinstance(chunk, (indiXML.DefBLOBVector,
                                   indiXML.DefSwitchVector,
