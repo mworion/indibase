@@ -883,5 +883,4 @@ class Client(PyQt5.QtCore.QObject):
         if not self.connected:
             return
         self.logger.warning('INDI client connection fault, error: {0}'.format(socketError))
-        self.socket.close()
-
+        self.disconnectServer()
