@@ -23,7 +23,7 @@ from indibase import indiXML
 
 app = PyQt5.QtWidgets.QApplication([])
 test = indiBase.Client()
-testServer = 'astro-mount.fritz.box'
+testServer = 'localhost'
 
 #
 #

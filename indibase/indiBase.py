@@ -15,6 +15,7 @@
 # standard libraries
 import logging
 import base64
+import socket
 # external packages
 import PyQt5.QtCore
 import PyQt5.QtNetwork
