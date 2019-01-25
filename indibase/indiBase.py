@@ -729,9 +729,40 @@ class Client(PyQt5.QtCore.QObject):
         self.devices = {}
         return True
 
-    def _dispatchCmd(self, chunk):
+    def _sendSignals(self, deviceName=None, chunk=None, iProperty=None):
         """
-        _dispatchCmd parses the incoming indi XL data and builds up a dictionary which
+
+        :param deviceName: XML element for parsing
+        :param chunk: XML element for parsing
+        :param iProperty: XML element for parsing
+        :return: True for test purpose
+        """
+
+        if isinstance(chunk, (indiXML.DefBLOBVector,
+                              indiXML.DefSwitchVector,
+                              indiXML.DefTextVector,
+                              indiXML.DefLightVector,
+                              indiXML.DefNumberVector,
+                              )
+                      ):
+            self.signals.newProperty.emit(deviceName, iProperty)
+        elif isinstance(chunk, indiXML.SetBLOBVector):
+            self.signals.newBLOB.emit(deviceName, iProperty)
+        elif isinstance(chunk, indiXML.SetSwitchVector):
+            self.signals.newSwitch.emit(deviceName, iProperty)
+        elif isinstance(chunk, indiXML.SetNumberVector):
+            self.signals.newNumber.emit(deviceName, iProperty)
+        elif isinstance(chunk, indiXML.SetTextVector):
+            self.signals.newText.emit(deviceName, iProperty)
+        elif isinstance(chunk, indiXML.SetLightVector):
+            self.signals.newLight.emit(deviceName, iProperty)
+        elif isinstance(chunk, indiXML.SetMessageVector):
+            self.signals.newMessage.emit(deviceName, iProperty)
+        return True
+
+    def _parseCmd(self, chunk):
+        """
+        _parseCmd parses the incoming indi XL data and builds up a dictionary which
         holds all the data.
 
         :param chunk: raw indi XML element
@@ -820,27 +851,9 @@ class Client(PyQt5.QtCore.QObject):
                 if name == 'DISCONNECT' and elt.getValue() == 'On':
                     self.signals.deviceDisconnected.emit(deviceName)
 
-            # do signals
-            if isinstance(chunk, (indiXML.DefBLOBVector,
-                                  indiXML.DefSwitchVector,
-                                  indiXML.DefTextVector,
-                                  indiXML.DefLightVector,
-                                  indiXML.DefNumberVector,
-                                  )
-                          ):
-                self.signals.newProperty.emit(deviceName, iProperty)
-            elif isinstance(chunk, indiXML.SetBLOBVector):
-                self.signals.newBLOB.emit(deviceName, iProperty)
-            elif isinstance(chunk, indiXML.SetSwitchVector):
-                self.signals.newSwitch.emit(deviceName, iProperty)
-            elif isinstance(chunk, indiXML.SetNumberVector):
-                self.signals.newNumber.emit(deviceName, iProperty)
-            elif isinstance(chunk, indiXML.SetTextVector):
-                self.signals.newText.emit(deviceName, iProperty)
-            elif isinstance(chunk, indiXML.SetLightVector):
-                self.signals.newLight.emit(deviceName, iProperty)
-            elif isinstance(chunk, indiXML.SetMessageVector):
-                self.signals.newMessage.emit(deviceName, iProperty)
+            self._sendSignals(deviceName=deviceName,
+                              chunk=chunk,
+                              iProperty=iProperty)
         else:
             # todo: here are still the active devices, which are not handled ???
             pass
@@ -870,7 +883,7 @@ class Client(PyQt5.QtCore.QObject):
                 continue
             # print('Depth: ', self.curDepth, '  Parsed: ', elem.items())
             elem = indiXML.parseETree(elem)
-            self._dispatchCmd(elem)
+            self._parseCmd(elem)
 
     @PyQt5.QtCore.pyqtSlot(PyQt5.QtNetwork.QAbstractSocket.SocketError)
     def _handleError(self, socketError):
