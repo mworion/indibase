@@ -746,6 +746,7 @@ class Client(PyQt5.QtCore.QObject):
                               )
                       ):
             self.signals.newProperty.emit(deviceName, iProperty)
+
         elif isinstance(chunk, indiXML.SetBLOBVector):
             self.signals.newBLOB.emit(deviceName, iProperty)
         elif isinstance(chunk, indiXML.SetSwitchVector):
