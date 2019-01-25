@@ -760,6 +760,48 @@ class Client(PyQt5.QtCore.QObject):
             self.signals.newMessage.emit(deviceName, iProperty)
         return True
 
+    def _addAttributes(self, deviceName=None, chunk=None, prop=None):
+        """
+
+        :param deviceName:
+        :param chunk:
+        :param prop:
+        :return: True for test purpose
+        """
+
+        # shortening again
+        element = prop['property']
+        # now running through all atomic elements
+        for elt in chunk.elt_list:
+            # first the name
+            name = elt.attr['name']
+            element[name] = {}
+            element[name]['elementType'] = elt.etype
+            # as a new blob vector does not  contain an initial value, we have to
+            # separate this
+            if not isinstance(elt, indiXML.DefBLOB):
+                # depending on the vector type, different value types are used
+                if elt.etype in ['defNumber',
+                                 'setNumber',
+                                 'oneNumber']:
+                    element[name]['value'] = float(elt.getValue())
+                elif elt.etype in ['defSwitch',
+                                   'oneSwitch',
+                                   'setSwitch']:
+                    element[name]['value'] = (elt.getValue() == 'On')
+                else:
+                    element[name]['value'] = elt.getValue()
+            # now all other attributes of element are stored
+            for attr in elt.attr:
+                element[name][attr] = elt.attr[attr]
+            # send connected signal
+            if name == 'CONNECT' and elt.getValue() == 'On':
+                self.signals.deviceConnected.emit(deviceName)
+            # send disconnected signal
+            if name == 'DISCONNECT' and elt.getValue() == 'On':
+                self.signals.deviceDisconnected.emit(deviceName)
+        return True
+
     def _parseCmd(self, chunk):
         """
         _parseCmd parses the incoming indi XL data and builds up a dictionary which
@@ -819,37 +861,10 @@ class Client(PyQt5.QtCore.QObject):
                 prop[vecAttr] = chunk.attr.get(vecAttr)
             # adding subspace for atomic elements (text, switch, etc)
             prop['property'] = {}
-            # shortening again
-            element = prop['property']
-            # now running through all atomic elements
-            for elt in chunk.elt_list:
-                # first the name
-                name = elt.attr['name']
-                element[name] = {}
-                element[name]['elementType'] = elt.etype
-                # as a new blob vector does not  contain an initial value, we have to
-                # separate this
-                if not isinstance(elt, indiXML.DefBLOB):
-                    # depending on the vector type, different value types are used
-                    if elt.etype in ['defNumber',
-                                     'setNumber',
-                                     'oneNumber']:
-                        element[name]['value'] = float(elt.getValue())
-                    elif elt.etype in ['defSwitch',
-                                       'oneSwitch',
-                                       'setSwitch']:
-                        element[name]['value'] = (elt.getValue() == 'On')
-                    else:
-                        element[name]['value'] = elt.getValue()
-                # now all other attributes of element are stored
-                for attr in elt.attr:
-                    element[name][attr] = elt.attr[attr]
-                # send connected signal
-                if name == 'CONNECT' and elt.getValue() == 'On':
-                    self.signals.deviceConnected.emit(deviceName)
-                # send disconnected signal
-                if name == 'DISCONNECT' and elt.getValue() == 'On':
-                    self.signals.deviceDisconnected.emit(deviceName)
+
+            self._addAttributes(deviceName=deviceName,
+                                chunk=chunk,
+                                prop=prop)
 
             self._sendSignals(deviceName=deviceName,
                               chunk=chunk,
