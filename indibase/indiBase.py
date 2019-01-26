@@ -99,6 +99,7 @@ class Device(object):
         retDict = {}
         for prop in elementList:
             retDict[prop] = elementList[prop]['value']
+        self.logger.debug('Get number: {0}'.format(retDict))
         return retDict
 
     def getText(self, propertyName):
@@ -120,6 +121,7 @@ class Device(object):
         retDict = {}
         for prop in elementList:
             retDict[prop] = elementList[prop]['value']
+        self.logger.debug('Get text: {0}'.format(retDict))
         return retDict
 
     def getSwitch(self, propertyName):
@@ -141,6 +143,7 @@ class Device(object):
         retDict = {}
         for prop in elementList:
             retDict[prop] = elementList[prop]['value']
+        self.logger.debug('Get switch: {0}'.format(retDict))
         return retDict
 
     def getLight(self, propertyName):
@@ -162,6 +165,7 @@ class Device(object):
         retDict = {}
         for prop in elementList:
             retDict[prop] = elementList[prop]['value']
+        self.logger.debug('Get light: {0}'.format(retDict))
         return retDict
 
     def getBlob(self, propertyName):
@@ -180,6 +184,7 @@ class Device(object):
             self.logger.error('Property: {0} is not Blob'.format(iProperty['propertyType']))
             return
         elementList = iProperty['elementList']
+        self.logger.debug('Get blob')
         return elementList[propertyName]
 
 
