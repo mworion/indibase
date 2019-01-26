@@ -893,6 +893,8 @@ class Client(PyQt5.QtCore.QObject):
         :param deviceName: device name
         :return: success
         """
+
+        # todo: there is actually no implementation for this type. check if it is relevant
         pass
 
     def _parseCmd(self, chunk):
