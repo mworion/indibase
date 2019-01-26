@@ -799,9 +799,11 @@ class Client(PyQt5.QtCore.QObject):
 
     def _getDeviceReference(self, chunk=None):
         """
+        _getDeviceReference extracts the device name from INDI chunk and looks device
+        presence in INDi base class up. if not present, a new device will be generated
 
-        :param chunk:
-        :return:
+        :param chunk:   xml element from INDI
+        :return: device and device name
         """
 
         deviceName = chunk.attr['device']
@@ -815,10 +817,11 @@ class Client(PyQt5.QtCore.QObject):
 
     def _delProperty(self, chunk=None, device=None, deviceName=None):
         """
+        _delProperty removes property from device class
 
-        :param chunk:
-        :param device:
-        :param deviceName:
+        :param chunk:   xml element from INDI
+        :param device:  device class
+        :param deviceName: device name
         :return: success
         """
 
@@ -834,10 +837,11 @@ class Client(PyQt5.QtCore.QObject):
 
     def _setProperty(self, chunk=None, device=None, deviceName=None):
         """
+        _sefProperty generate and write all data to device class for SefVector chunks
 
-        :param chunk:
-        :param device:
-        :param deviceName:
+        :param chunk:   xml element from INDI
+        :param device:  device class
+        :param deviceName: device name
         :return: success
         """
 
@@ -864,10 +868,11 @@ class Client(PyQt5.QtCore.QObject):
 
     def _defProperty(self, chunk=None, device=None, deviceName=None):
         """
+        _defProperty generate and write all data to device class for DefVector chunks
 
-        :param chunk:
-        :param device:
-        :param deviceName:
+        :param chunk:   xml element from INDI
+        :param device:  device class
+        :param deviceName: device name
         :return: success
         """
 
@@ -883,17 +888,17 @@ class Client(PyQt5.QtCore.QObject):
     def _getProperty(self, chunk=None, device=None, deviceName=None):
         """
 
-        :param chunk:
-        :param device:
-        :param deviceName:
+        :param chunk:   xml element from INDI
+        :param device:  device class
+        :param deviceName: device name
         :return: success
         """
         pass
 
     def _parseCmd(self, chunk):
         """
-        _parseCmd parses the incoming indi XL data and builds up a dictionary which
-        holds all the data.
+        _parseCmd parses the incoming indi XL data and builds up a dictionary of devices
+        in device class which holds all the data transferred through INDI protocol.
 
         :param chunk: raw indi XML element
         :return: success if it could be parsed
