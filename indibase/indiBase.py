@@ -31,7 +31,7 @@ class INDISignals(PyQt5.QtCore.QObject):
     """
 
     __all__ = ['INDISignals']
-    version = '0.2'
+    version = '0.9'
 
     newDevice = PyQt5.QtCore.pyqtSignal(str)
     removeDevice = PyQt5.QtCore.pyqtSignal(str)
@@ -70,7 +70,7 @@ class Device(object):
                'getBlob',
                ]
 
-    version = '0.1'
+    version = '0.5'
     logger = logging.getLogger(__name__)
 
     def __init__(self,
@@ -95,7 +95,7 @@ class Device(object):
                                              'setNumberVector']:
             self.logger.error('Property: {0} is not Number'.format(iProperty['propertyType']))
             return
-        elementList = iProperty['property']
+        elementList = iProperty['elementList']
         retDict = {}
         for prop in elementList:
             retDict[prop] = elementList[prop]['value']
@@ -116,7 +116,7 @@ class Device(object):
                                              'setTextVector']:
             self.logger.error('Property: {0} is not Text'.format(iProperty['propertyType']))
             return
-        elementList = iProperty['property']
+        elementList = iProperty['elementList']
         retDict = {}
         for prop in elementList:
             retDict[prop] = elementList[prop]['value']
@@ -137,7 +137,7 @@ class Device(object):
                                              'setSwitchVector']:
             self.logger.error('Property: {0} is not Switch'.format(iProperty['propertyType']))
             return
-        elementList = iProperty['property']
+        elementList = iProperty['elementList']
         retDict = {}
         for prop in elementList:
             retDict[prop] = elementList[prop]['value']
@@ -158,7 +158,7 @@ class Device(object):
                                              'setLightVector']:
             self.logger.error('Property: {0} is not Light'.format(iProperty['propertyType']))
             return
-        elementList = iProperty['property']
+        elementList = iProperty['elementList']
         retDict = {}
         for prop in elementList:
             retDict[prop] = elementList[prop]['value']
@@ -179,7 +179,7 @@ class Device(object):
                                              'setBLOBVector']:
             self.logger.error('Property: {0} is not Blob'.format(iProperty['propertyType']))
             return
-        elementList = iProperty['property']
+        elementList = iProperty['elementList']
         return elementList[propertyName]
 
 
@@ -223,7 +223,7 @@ class Client(PyQt5.QtCore.QObject):
                'setConnectionTimeout',
                ]
 
-    version = '0.31'
+    version = '0.4'
     logger = logging.getLogger(__name__)
 
     # INDI device types
@@ -497,9 +497,8 @@ class Client(PyQt5.QtCore.QObject):
 
         :param deviceName: name string of INDI device
         :param propertyName: name string of device property
-        :return: true if server connected
+        :return: None, because not implemented
         """
-
         pass
 
     def getHost(self):
@@ -707,7 +706,7 @@ class Client(PyQt5.QtCore.QObject):
             return -1
         val = getattr(device, 'DRIVER_INFO')
         if val:
-            val = val['property'].get('DRIVER_INTERFACE', '')
+            val = val['elementList'].get('DRIVER_INTERFACE', '')
             if val:
                 interface = val['value']
                 return int(interface)
@@ -729,25 +728,126 @@ class Client(PyQt5.QtCore.QObject):
         self.devices = {}
         return True
 
-    def _sendSignals(self, deviceName=None, chunk=None, iProperty=None):
+    def _fillAttributes(self, deviceName=None, chunk=None, elementList=None):
         """
 
-        :param deviceName: XML element for parsing
-        :param chunk: XML element for parsing
-        :param iProperty: XML element for parsing
+        :param deviceName:
+        :param chunk:
+        :param elementList:
         :return: True for test purpose
         """
 
-        if isinstance(chunk, (indiXML.DefBLOBVector,
-                              indiXML.DefSwitchVector,
-                              indiXML.DefTextVector,
-                              indiXML.DefLightVector,
-                              indiXML.DefNumberVector,
-                              )
-                      ):
-            self.signals.newProperty.emit(deviceName, iProperty)
+        # now running through all atomic elements
+        for elt in chunk.elt_list:
+            name = elt.attr['name']
+            elementList[name] = {}
+            elementList[name]['elementType'] = elt.etype
 
-        elif isinstance(chunk, indiXML.SetBLOBVector):
+            # as a new blob vector does not  contain an initial value, we have to separate this
+            if not isinstance(elt, indiXML.DefBLOB):
+
+                if elt.etype in ['defNumber',
+                                 'setNumber',
+                                 'oneNumber']:
+                    elementList[name]['value'] = float(elt.getValue())
+
+                elif elt.etype in ['defSwitch',
+                                   'oneSwitch',
+                                   'setSwitch']:
+                    elementList[name]['value'] = (elt.getValue() == 'On')
+
+                else:
+                    elementList[name]['value'] = elt.getValue()
+
+            # now all other attributes of element are stored
+            for attr in elt.attr:
+                elementList[name][attr] = elt.attr[attr]
+
+            # send connected signals
+            if name == 'CONNECT' and elt.getValue() == 'On':
+                self.signals.deviceConnected.emit(deviceName)
+            if name == 'DISCONNECT' and elt.getValue() == 'On':
+                self.signals.deviceDisconnected.emit(deviceName)
+
+        return True
+
+    @staticmethod
+    def _setupPropertyStructure(chunk=None, device=None):
+        """
+
+        :param chunk:
+        :param device:
+        :return:
+        """
+
+        iProperty = chunk.attr['name']
+        if not hasattr(device, iProperty):
+            setattr(device, iProperty, {})
+
+        # shortening for readability
+        deviceProperty = getattr(device, iProperty)
+
+        deviceProperty['propertyType'] = chunk.etype
+        for vecAttr in chunk.attr:
+            deviceProperty[vecAttr] = chunk.attr.get(vecAttr)
+
+        # adding subspace for atomic elements (text, switch, etc)
+        deviceProperty['elementList'] = {}
+        elementList = deviceProperty['elementList']
+
+        return iProperty, elementList
+
+    def _getDeviceReference(self, chunk=None):
+        """
+
+        :param chunk:
+        :return:
+        """
+
+        deviceName = chunk.attr['device']
+
+        if deviceName not in self.devices:
+            self.devices[deviceName] = Device(deviceName)
+            self.signals.newDevice.emit(deviceName)
+
+        device = self.devices[deviceName]
+        return device, deviceName
+
+    def _delProperty(self, chunk=None, device=None, deviceName=None):
+        """
+
+        :param chunk:
+        :param device:
+        :param deviceName:
+        :return: success
+        """
+
+        if deviceName not in self.devices:
+            return False
+        if 'name' not in chunk.attr:
+            return False
+        iProperty = chunk.attr['name']
+        if hasattr(device, iProperty):
+            delattr(device, iProperty)
+            self.signals.removeProperty.emit(deviceName, iProperty)
+        return True
+
+    def _setProperty(self, chunk=None, device=None, deviceName=None):
+        """
+
+        :param chunk:
+        :param device:
+        :param deviceName:
+        :return: success
+        """
+
+        iProperty, elementList = self._setupPropertyStructure(chunk=chunk, device=device)
+
+        self._fillAttributes(deviceName=deviceName,
+                             chunk=chunk,
+                             elementList=elementList)
+
+        if isinstance(chunk, indiXML.SetBLOBVector):
             self.signals.newBLOB.emit(deviceName, iProperty)
         elif isinstance(chunk, indiXML.SetSwitchVector):
             self.signals.newSwitch.emit(deviceName, iProperty)
@@ -759,49 +859,36 @@ class Client(PyQt5.QtCore.QObject):
             self.signals.newLight.emit(deviceName, iProperty)
         elif isinstance(chunk, indiXML.SetMessageVector):
             self.signals.newMessage.emit(deviceName, iProperty)
+
         return True
 
-    def _addAttributes(self, deviceName=None, chunk=None, prop=None):
+    def _defProperty(self, chunk=None, device=None, deviceName=None):
         """
 
-        :param deviceName:
         :param chunk:
-        :param prop:
-        :return: True for test purpose
+        :param device:
+        :param deviceName:
+        :return: success
         """
 
-        # shortening again
-        element = prop['property']
-        # now running through all atomic elements
-        for elt in chunk.elt_list:
-            # first the name
-            name = elt.attr['name']
-            element[name] = {}
-            element[name]['elementType'] = elt.etype
-            # as a new blob vector does not  contain an initial value, we have to
-            # separate this
-            if not isinstance(elt, indiXML.DefBLOB):
-                # depending on the vector type, different value types are used
-                if elt.etype in ['defNumber',
-                                 'setNumber',
-                                 'oneNumber']:
-                    element[name]['value'] = float(elt.getValue())
-                elif elt.etype in ['defSwitch',
-                                   'oneSwitch',
-                                   'setSwitch']:
-                    element[name]['value'] = (elt.getValue() == 'On')
-                else:
-                    element[name]['value'] = elt.getValue()
-            # now all other attributes of element are stored
-            for attr in elt.attr:
-                element[name][attr] = elt.attr[attr]
-            # send connected signal
-            if name == 'CONNECT' and elt.getValue() == 'On':
-                self.signals.deviceConnected.emit(deviceName)
-            # send disconnected signal
-            if name == 'DISCONNECT' and elt.getValue() == 'On':
-                self.signals.deviceDisconnected.emit(deviceName)
+        iProperty, elementList = self._setupPropertyStructure(chunk=chunk, device=device)
+
+        self._fillAttributes(deviceName=deviceName,
+                             chunk=chunk,
+                             elementList=elementList)
+
+        self.signals.newProperty.emit(deviceName, iProperty)
         return True
+
+    def _getProperty(self, chunk=None, device=None, deviceName=None):
+        """
+
+        :param chunk:
+        :param device:
+        :param deviceName:
+        :return: success
+        """
+        pass
 
     def _parseCmd(self, chunk):
         """
@@ -814,65 +901,46 @@ class Client(PyQt5.QtCore.QObject):
 
         if self.verbose:
             print(chunk)
+
         if 'device' not in chunk.attr:
             self.logger.error('No device in chunk: {0}'.format(chunk))
             return False
+        if 'name' not in chunk.attr:
+            self.logger.error('No property in chunk: {0}'.format(chunk))
+            return False
 
-        deviceName = chunk.attr['device']
-        if deviceName not in self.devices:
-            self.devices[deviceName] = Device(deviceName)
-            self.signals.newDevice.emit(deviceName)
-        device = self.devices[deviceName]
+        device, deviceName = self._getDeviceReference(chunk=chunk)
 
-        # deleting properties from devices
         if isinstance(chunk, indiXML.DelProperty):
-            if deviceName not in self.devices:
-                return False
-            if 'name' not in chunk.attr:
-                return False
-            delProperty = chunk.attr['name']
-            if hasattr(device, delProperty):
-                delattr(device, delProperty)
-                self.signals.removeProperty.emit(deviceName, delProperty)
+            self._delProperty(chunk=chunk, device=device, deviceName=deviceName)
+            return True
 
         if isinstance(chunk, (indiXML.SetBLOBVector,
                               indiXML.SetSwitchVector,
                               indiXML.SetTextVector,
                               indiXML.SetLightVector,
                               indiXML.SetNumberVector,
-                              indiXML.DefBLOBVector,
+                              )
+                      ):
+            self._setProperty(chunk=chunk, device=device, deviceName=deviceName)
+            return True
+
+        if isinstance(chunk, (indiXML.DefBLOBVector,
                               indiXML.DefSwitchVector,
                               indiXML.DefTextVector,
                               indiXML.DefLightVector,
                               indiXML.DefNumberVector,
                               )
                       ):
-            if 'name' not in chunk.attr:
-                return False
-            iProperty = chunk.attr['name']
-            if not hasattr(device, iProperty):
-                # set property (SetSwitchVector etc.)
-                setattr(device, iProperty, {})
-            # shortening for readability
-            prop = getattr(device, iProperty)
-            # add property type
-            prop['propertyType'] = chunk.etype
-            # add attributes to iProperty
-            for vecAttr in chunk.attr:
-                prop[vecAttr] = chunk.attr.get(vecAttr)
-            # adding subspace for atomic elements (text, switch, etc)
-            prop['property'] = {}
+            self._defProperty(chunk=chunk, device=device, deviceName=deviceName)
+            return True
 
-            self._addAttributes(deviceName=deviceName,
-                                chunk=chunk,
-                                prop=prop)
+        if isinstance(chunk, indiXML.GetProperties):
+            self._getProperty(chunk=chunk, device=device, deviceName=deviceName)
+            return True
 
-            self._sendSignals(deviceName=deviceName,
-                              chunk=chunk,
-                              iProperty=iProperty)
-        else:
-            # todo: here are still the active devices, which are not handled ???
-            pass
+        self.logger.error('Unknown vectors: {0}'.format(chunk))
+        return False
 
     @PyQt5.QtCore.pyqtSlot()
     def _handleReadyRead(self):
