@@ -725,6 +725,7 @@ class Client(PyQt5.QtCore.QObject):
 
         for deviceName in self.devices:
             self.signals.removeDevice.emit(deviceName)
+            self.logger.info('Remove device {0}'.format(deviceName))
         self.devices = {}
         return True
 
@@ -766,8 +767,10 @@ class Client(PyQt5.QtCore.QObject):
             # send connected signals
             if name == 'CONNECT' and elt.getValue() == 'On':
                 self.signals.deviceConnected.emit(deviceName)
+                self.logger.info('Device {0} connected'.format(deviceName))
             if name == 'DISCONNECT' and elt.getValue() == 'On':
                 self.signals.deviceDisconnected.emit(deviceName)
+                self.logger.info('Device {0} disconnected'.format(deviceName))
 
         return True
 
@@ -811,6 +814,7 @@ class Client(PyQt5.QtCore.QObject):
         if deviceName not in self.devices:
             self.devices[deviceName] = Device(deviceName)
             self.signals.newDevice.emit(deviceName)
+            self.logger.info('New device {0}'.format(deviceName))
 
         device = self.devices[deviceName]
         return device, deviceName
@@ -833,6 +837,7 @@ class Client(PyQt5.QtCore.QObject):
         if hasattr(device, iProperty):
             delattr(device, iProperty)
             self.signals.removeProperty.emit(deviceName, iProperty)
+            self.logger.info('New device [{0}] property {1}'.format(deviceName, iProperty))
         return True
 
     def _setProperty(self, chunk=None, device=None, deviceName=None):
@@ -908,6 +913,7 @@ class Client(PyQt5.QtCore.QObject):
 
         if self.verbose:
             print(chunk)
+        self.logger.debug('INDi XML chunk: {0}'.format(chunk))
 
         if 'device' not in chunk.attr:
             self.logger.error('No device in chunk: {0}'.format(chunk))
@@ -987,5 +993,5 @@ class Client(PyQt5.QtCore.QObject):
 
         if not self.connected:
             return
-        self.logger.warning('INDI client connection fault, error: {0}'.format(socketError))
+        self.logger.error('INDI client connection fault, error: {0}'.format(socketError))
         self.disconnectServer()
