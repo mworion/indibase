@@ -326,8 +326,8 @@ class Client(PyQt5.QtCore.QObject):
         """
         cmd = indiXML.clientGetProperties(indi_attr={'version': '1.7',
                                                      'device': deviceName})
-        val = self._sendCmd(cmd)
-        return val
+        suc = self._sendCmd(cmd)
+        return suc
 
     def connectServer(self):
         """
@@ -421,11 +421,11 @@ class Client(PyQt5.QtCore.QObject):
             return False
         if not deviceName:
             return False
-        val = self.sendNewSwitch(deviceName=deviceName,
+        suc = self.sendNewSwitch(deviceName=deviceName,
                                  propertyName='CONNECTION',
                                  elements='CONNECT',
                                  )
-        return val
+        return suc
 
     def disconnectDevice(self, deviceName=''):
         """
@@ -441,11 +441,11 @@ class Client(PyQt5.QtCore.QObject):
             return False
         if deviceName not in self.devices:
             return False
-        val = self.sendNewSwitch(deviceName=deviceName,
+        suc = self.sendNewSwitch(deviceName=deviceName,
                                  propertyName='CONNECTION',
                                  elements='DISCONNECT',
                                  )
-        return val
+        return suc
 
     def getDevice(self, deviceName=''):
         """
@@ -493,8 +493,8 @@ class Client(PyQt5.QtCore.QObject):
                                  indi_attr={'name': propertyName,
                                             'device': deviceName})
         self.blobMode = blobHandling
-        val = self._sendCmd(cmd)
-        return val
+        suc = self._sendCmd(cmd)
+        return suc
 
     def getBlobMode(self, deviceName='', propertyName=''):
         """
@@ -560,8 +560,8 @@ class Client(PyQt5.QtCore.QObject):
         cmd = indiXML.newTextVector(elementList,
                                     indi_attr={'name': propertyName,
                                                'device': deviceName})
-        val = self._sendCmd(cmd)
-        return val
+        suc = self._sendCmd(cmd)
+        return suc
 
     def sendNewNumber(self, deviceName='', propertyName='', elements='', number=0):
         """
@@ -591,8 +591,8 @@ class Client(PyQt5.QtCore.QObject):
         cmd = indiXML.newNumberVector(elementList,
                                       indi_attr={'name': propertyName,
                                                  'device': deviceName})
-        val = self._sendCmd(cmd)
-        return val
+        suc = self._sendCmd(cmd)
+        return suc
 
     def sendNewSwitch(self, deviceName='', propertyName='', elements=''):
         """
@@ -621,8 +621,8 @@ class Client(PyQt5.QtCore.QObject):
         cmd = indiXML.newSwitchVector(elementList,
                                       indi_attr={'name': propertyName,
                                                  'device': deviceName})
-        val = self._sendCmd(cmd)
-        return val
+        suc = self._sendCmd(cmd)
+        return suc
 
     def startBlob(self, deviceName='', propertyName='', timestamp=''):
         """
