@@ -918,13 +918,13 @@ class Client(PyQt5.QtCore.QObject):
 
         if self.verbose:
             print(chunk)
-        self.logger.debug('INDi XML chunk: {0}'.format(chunk.replace('\n', '')))
+        self.logger.debug('INDi XML chunk: {0}'.format(chunk))
 
         if 'device' not in chunk.attr:
-            self.logger.error('No device in chunk: {0}'.format(chunk.replace('\n', '')))
+            self.logger.error('No device in chunk: {0}'.format(chunk))
             return False
         if 'name' not in chunk.attr:
-            self.logger.error('No property in chunk: {0}'.format(chunk.replace('\n', '')))
+            self.logger.error('No property in chunk: {0}'.format(chunk))
             return False
 
         device, deviceName = self._getDeviceReference(chunk=chunk)
@@ -957,7 +957,7 @@ class Client(PyQt5.QtCore.QObject):
             self._getProperty(chunk=chunk, device=device, deviceName=deviceName)
             return True
 
-        self.logger.error('Unknown vectors: {0}'.format(chunk.replace('\n', '')))
+        self.logger.error('Unknown vectors: {0}'.format(chunk))
         return False
 
     @PyQt5.QtCore.pyqtSlot()

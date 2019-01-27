@@ -182,8 +182,8 @@ class INDIVector(INDIBase):
     def __str__(self):
         elt_str = ""
         for elt in self.elt_list:
-            elt_str += "  " + str(elt) + "\n"
-        return INDIBase.__str__(self) + "\n" + elt_str
+            elt_str += "  " + str(elt) + " "
+        return INDIBase.__str__(self) + " " + elt_str
 
     def getElt(self, index):
         return self.elt_list[index]
