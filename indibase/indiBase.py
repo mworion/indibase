@@ -228,7 +228,7 @@ class Client(PyQt5.QtCore.QObject):
                'setConnectionTimeout',
                ]
 
-    version = '0.4'
+    version = '0.41'
     logger = logging.getLogger(__name__)
 
     # INDI device types
@@ -734,12 +734,13 @@ class Client(PyQt5.QtCore.QObject):
         self.devices = {}
         return True
 
-    def _fillAttributes(self, deviceName=None, chunk=None, elementList=None):
+    def _fillAttributes(self, deviceName=None, chunk=None, elementList=None, defVector=None):
         """
 
-        :param deviceName:
-        :param chunk:
+        :param deviceName: device name
+        :param chunk:   xml element from INDI
         :param elementList:
+        :param defVector:
         :return: True for test purpose
         """
 
@@ -769,6 +770,10 @@ class Client(PyQt5.QtCore.QObject):
             for attr in elt.attr:
                 elementList[name][attr] = elt.attr[attr]
 
+            # if we don't set values, no connection signals
+            if defVector:
+                continue
+
             # send connected signals
             if name == 'CONNECT' and elt.getValue() == 'On':
                 self.signals.deviceConnected.emit(deviceName)
@@ -783,8 +788,8 @@ class Client(PyQt5.QtCore.QObject):
     def _setupPropertyStructure(chunk=None, device=None):
         """
 
-        :param chunk:
-        :param device:
+        :param chunk:   xml element from INDI
+        :param device:  device class
         :return:
         """
 
@@ -859,7 +864,8 @@ class Client(PyQt5.QtCore.QObject):
 
         self._fillAttributes(deviceName=deviceName,
                              chunk=chunk,
-                             elementList=elementList)
+                             elementList=elementList,
+                             defVector=False)
 
         if isinstance(chunk, indiXML.SetBLOBVector):
             self.signals.newBLOB.emit(deviceName, iProperty)
@@ -871,8 +877,6 @@ class Client(PyQt5.QtCore.QObject):
             self.signals.newText.emit(deviceName, iProperty)
         elif isinstance(chunk, indiXML.SetLightVector):
             self.signals.newLight.emit(deviceName, iProperty)
-        elif isinstance(chunk, indiXML.SetMessageVector):
-            self.signals.newMessage.emit(deviceName, iProperty)
 
         return True
 
@@ -890,7 +894,8 @@ class Client(PyQt5.QtCore.QObject):
 
         self._fillAttributes(deviceName=deviceName,
                              chunk=chunk,
-                             elementList=elementList)
+                             elementList=elementList,
+                             defVector=True)
 
         self.signals.newProperty.emit(deviceName, iProperty)
         return True
@@ -906,6 +911,18 @@ class Client(PyQt5.QtCore.QObject):
 
         # todo: there is actually no implementation for this type. check if it is relevant
         pass
+
+    def _message(self, chunk=None, deviceName=None):
+        """
+
+        :param chunk:   xml element from INDI
+        :param deviceName: device name
+        :return: success
+        """
+
+        message = chunk.attr.get('message', '-')
+        self.signals.newMessage.emit(deviceName, message)
+        return True
 
     def _parseCmd(self, chunk):
         """
@@ -923,11 +940,16 @@ class Client(PyQt5.QtCore.QObject):
         if 'device' not in chunk.attr:
             self.logger.error('No device in chunk: {0}'.format(chunk))
             return False
+
+        device, deviceName = self._getDeviceReference(chunk=chunk)
+
+        if isinstance(chunk, indiXML.Message):
+            self._message(chunk=chunk, deviceName=deviceName)
+            return True
+
         if 'name' not in chunk.attr:
             self.logger.error('No property in chunk: {0}'.format(chunk))
             return False
-
-        device, deviceName = self._getDeviceReference(chunk=chunk)
 
         if isinstance(chunk, indiXML.DelProperty):
             self._delProperty(chunk=chunk, device=device, deviceName=deviceName)
