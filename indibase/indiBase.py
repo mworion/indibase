@@ -90,6 +90,8 @@ class Device(object):
         :return: dict with number / number vector
         """
 
+        if not hasattr(self, propertyName):
+            return {}
         iProperty = getattr(self, propertyName)
         if iProperty['propertyType'] not in ['defNumberVector',
                                              'setNumberVector']:
@@ -112,6 +114,8 @@ class Device(object):
         :return: dict with text or text vector
         """
 
+        if not hasattr(self, propertyName):
+            return {}
         iProperty = getattr(self, propertyName)
         if iProperty['propertyType'] not in ['defTextVector',
                                              'setTextVector']:
@@ -134,6 +138,8 @@ class Device(object):
         :return: dict with switch or switch vector
         """
 
+        if not hasattr(self, propertyName):
+            return {}
         iProperty = getattr(self, propertyName)
         if iProperty['propertyType'] not in ['defSwitchVector',
                                              'setSwitchVector']:
@@ -156,6 +162,8 @@ class Device(object):
         :return: dict with light or light vector
         """
 
+        if not hasattr(self, propertyName):
+            return {}
         iProperty = getattr(self, propertyName)
         if iProperty['propertyType'] not in ['defLightVector',
                                              'setLightVector']:
@@ -178,6 +186,8 @@ class Device(object):
         """
 
         # blob return different, because it's binary data
+        if not hasattr(self, propertyName):
+            return {}
         iProperty = getattr(self, propertyName)
         if iProperty['propertyType'] not in ['defBLOBVector',
                                              'setBLOBVector']:
