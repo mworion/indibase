@@ -920,7 +920,6 @@ class Client(PyQt5.QtCore.QObject):
         """
 
         # todo: there is actually no implementation for this type. check if it is relevant
-        print(deviceName, chunk.attr.get('name', ''))
         pass
 
     def _message(self, chunk=None, deviceName=None):
