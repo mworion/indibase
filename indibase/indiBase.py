@@ -756,7 +756,7 @@ class Client(PyQt5.QtCore.QObject):
 
         # now running through all atomic elements
         for elt in chunk.elt_list:
-            name = elt.attr['name']
+            name = elt.attr.get('name','')
             elementList[name] = {}
             elementList[name]['elementType'] = elt.etype
 
@@ -803,7 +803,7 @@ class Client(PyQt5.QtCore.QObject):
         :return:
         """
 
-        iProperty = chunk.attr['name']
+        iProperty = chunk.attr.get('name', '')
         if not hasattr(device, iProperty):
             setattr(device, iProperty, {})
 
@@ -829,7 +829,7 @@ class Client(PyQt5.QtCore.QObject):
         :return: device and device name
         """
 
-        deviceName = chunk.attr['device']
+        deviceName = chunk.attr.get('device', '')
 
         if deviceName not in self.devices:
             self.devices[deviceName] = Device(deviceName)
@@ -920,6 +920,7 @@ class Client(PyQt5.QtCore.QObject):
         """
 
         # todo: there is actually no implementation for this type. check if it is relevant
+        print(deviceName, chunk.attr.get('name', ''))
         pass
 
     def _message(self, chunk=None, deviceName=None):
