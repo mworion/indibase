@@ -267,6 +267,7 @@ class Client(PyQt5.QtCore.QObject):
                  host=None,
                  ):
         super().__init__()
+
         self.host = host
 
         # instance variables
@@ -276,7 +277,6 @@ class Client(PyQt5.QtCore.QObject):
         self.blobMode = 'Never'
         self.devices = dict()
         self.curDepth = 0
-        self.indiUp = False
 
         # tcp handling
         self.socket = PyQt5.QtNetwork.QTcpSocket()
@@ -397,27 +397,6 @@ class Client(PyQt5.QtCore.QObject):
         """
 
         return self.connected
-
-    def checkINDIServerUp(self):
-        """
-        checkINDIServerUp polls the host/port of the indi server and set the state and
-        signals for the status accordingly.
-
-        :return: nothing
-        """
-
-        client = socket.socket()
-        client.settimeout(self.CONNECTION_TIMEOUT)
-        try:
-            client.connect(self.host)
-        except Exception:
-            if self.indiUp:
-                self.indiUp = False
-        else:
-            if not self.indiUp:
-                self.indiUp = True
-        finally:
-            client.close()
 
     def connectDevice(self, deviceName=''):
         """
