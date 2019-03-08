@@ -238,7 +238,7 @@ class Client(PyQt5.QtCore.QObject):
                'setConnectionTimeout',
                ]
 
-    version = '0.42'
+    version = '0.5'
     logger = logging.getLogger(__name__)
 
     # INDI device types
