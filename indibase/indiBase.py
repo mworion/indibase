@@ -719,6 +719,7 @@ class Client(PyQt5.QtCore.QObject):
 
         for deviceName in self.devices:
             self.signals.removeDevice.emit(deviceName)
+            self.signals.deviceDisconnected.emit(deviceName)
             self.logger.info('Remove device {0}'.format(deviceName))
         self.devices = {}
         return True
