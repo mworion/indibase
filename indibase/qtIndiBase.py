@@ -66,16 +66,19 @@ class Client(indibase.indiBase.Client):
         if self.connected:
             return
 
+        socket.setdefaulttimeout(self.SOCKET_TIMEOUT)
         client = socket.socket()
         client.settimeout(self.SOCKET_TIMEOUT)
         try:
             client.connect(self.host)
         except Exception:
-            pass
+            client.close()
         else:
+            client.shutdown()
+            client.close()
             self.connectServer()
         finally:
-            client.close()
+            pass
 
     def startTimers(self):
         """
