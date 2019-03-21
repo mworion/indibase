@@ -21,6 +21,59 @@ import PyQt5.QtCore
 import indibase.indiBase
 
 
+class WorkerSignals(PyQt5.QtCore.QObject):
+    """
+    The WorkerSignals class offers a list of signals to be used and instantiated by the
+    Worker class to get signals for error, finished and result to be transferred to the
+    caller back
+    """
+
+    __all__ = ['WorkerSignals']
+    version = '0.1'
+
+    finished = PyQt5.QtCore.pyqtSignal()
+    error = PyQt5.QtCore.pyqtSignal(object)
+    result = PyQt5.QtCore.pyqtSignal(object)
+
+
+class Worker(PyQt5.QtCore.QRunnable):
+    """
+    The Worker class offers a generic interface to allow any function to be executed as a
+    thread in an threadpool
+    """
+
+    __all__ = ['Worker',
+               'run']
+    version = '0.1'
+    logger = logging.getLogger(__name__)
+
+    def __init__(self, fn, *args, **kwargs):
+        super(Worker, self).__init__()
+        # Store constructor arguments (re-used for processing)
+        self.fn = fn
+        self.args = args
+        self.kwargs = kwargs
+        # the worker signal must not be a class variable, but instance otherwise
+        # we get trouble when having multiple threads running
+        self.signals = WorkerSignals()
+
+    def run(self):
+        """
+        runs an arbitrary methods with it's parameters and catches the result
+
+        :return: nothing, but sends results and status as signals
+        """
+
+        try:
+            result = self.fn(*self.args, **self.kwargs)
+        except Exception as e:
+            self.signals.error.emit(e)
+        else:
+            self.signals.result.emit(result)
+        finally:
+            self.signals.finished.emit()
+
+
 class Client(indibase.indiBase.Client):
     """
     Client implements an INDI Base Client for INDI servers. it rely on PyQt5 and it's
@@ -51,9 +104,12 @@ class Client(indibase.indiBase.Client):
         super().__init__(host=host,
                          )
 
+        self.threadpool = PyQt5.QtCore.QThreadPool()
+        self.mutexServerUp = PyQt5.QtCore.QMutex()
+
         self.timerServerUp = PyQt5.QtCore.QTimer()
         self.timerServerUp.setSingleShot(False)
-        self.timerServerUp.timeout.connect(self.checkServerUp)
+        self.timerServerUp.timeout.connect(self.cycleCheckServerUp)
 
     def checkServerUp(self):
         """
@@ -79,6 +135,34 @@ class Client(indibase.indiBase.Client):
             self.connectServer()
         finally:
             pass
+
+    def clearCycleCheckServerUp(self):
+        """
+        the cyclic or long lasting tasks for getting date from the mount should not run
+        twice for the same data at the same time. so there is a mutex to prevent this
+        behaviour. remove the mutex unlock this mutex.
+
+        :return: nothing
+        """
+
+        self.mutexServerUp.unlock()
+
+    def cycleCheckServerUp(self):
+        """
+        cycleCheckServerUp prepares the worker thread and the signals for getting the settings
+        data.
+
+        :return: nothing
+        """
+
+        if self.connected:
+            return
+        if not self.mutexServerUp.tryLock():
+            self.logger.info('overrun in check server up')
+            return
+        worker = Worker(self.checkServerUp)
+        worker.signals.finished.connect(self.clearCycleCheckServerUp)
+        self.threadpool.start(worker)
 
     def startTimers(self):
         """
