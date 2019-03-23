@@ -374,6 +374,7 @@ class Client(PyQt5.QtCore.QObject):
         self._clearDevices()
         self.socket.abort()
         self.signals.serverDisconnected.emit()
+        self.connected = False
         return True
 
     @PyQt5.QtCore.pyqtSlot()
@@ -386,7 +387,6 @@ class Client(PyQt5.QtCore.QObject):
 
         self.logger.info('INDI client disconnected')
         self.disconnectServer()
-        self.connected = False
 
     def isServerConnected(self):
         """
@@ -1010,6 +1010,5 @@ class Client(PyQt5.QtCore.QObject):
 
         if not self.connected:
             return
-        self.connected = False
         self.logger.error('INDI client connection fault, error: {0}'.format(socketError))
         self.disconnectServer()
