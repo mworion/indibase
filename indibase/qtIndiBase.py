@@ -120,8 +120,9 @@ class Client(indibase.indiBase.Client):
         """
 
         if self.connected:
-            return
+            return False
 
+        suc = False
         socket.setdefaulttimeout(self.SOCKET_TIMEOUT)
         client = socket.socket()
         client.settimeout(self.SOCKET_TIMEOUT)
@@ -132,9 +133,24 @@ class Client(indibase.indiBase.Client):
         else:
             client.shutdown()
             client.close()
-            self.connectServer()
+            suc = True
         finally:
             pass
+        return suc
+
+    def checkServerUpResult(self, result):
+        """
+
+        :param result:
+        :return:
+        """
+
+        if result:
+            suc = self.connectServer()
+            self.logger.debug(f'Try to connect to server, result: {suc}')
+            return suc
+        else:
+            return False
 
     def clearCycleCheckServerUp(self):
         """
@@ -162,6 +178,7 @@ class Client(indibase.indiBase.Client):
             return
         worker = Worker(self.checkServerUp)
         worker.signals.finished.connect(self.clearCycleCheckServerUp)
+        worker.signals.result.connect(self.checkServerUpResult)
         self.threadpool.start(worker)
 
     def startTimers(self):

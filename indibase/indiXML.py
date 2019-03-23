@@ -267,10 +267,10 @@ class Message(INDIBase):
     def __str__(self):
         if "message" in self.attr:
             return INDIBase.__str__(self) \
-                   + "\n  " + self.attr["message"]
+                   + " - " + self.attr["message"]
         else:
             return INDIBase.__str__(self) \
-                   + "\n  empty message.\n"
+                   + " - empty message"
 
 
 class DelProperty(INDIBase):
@@ -326,11 +326,10 @@ class OneBLOB(INDIElement):
 
     def __str__(self):
         return INDIBase.__str__(self) \
-               + "\n    " \
+               + " - " \
                + self.attr["size"] \
-               + "\n    " \
-               + self.attr["format"] \
-               + "\n"
+               + " - " \
+               + self.attr["format"]
 
 
 #
