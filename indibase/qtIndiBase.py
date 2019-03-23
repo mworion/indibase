@@ -67,8 +67,10 @@ class Worker(PyQt5.QtCore.QRunnable):
         try:
             result = self.fn(*self.args, **self.kwargs)
         except Exception as e:
+            print('error', e)
             self.signals.error.emit(e)
         else:
+            print('result', result)
             self.signals.result.emit(result)
         finally:
             self.signals.finished.emit()
@@ -120,7 +122,7 @@ class Client(indibase.indiBase.Client):
         """
 
         if self.connected:
-            return False
+            return True
 
         suc = False
         socket.setdefaulttimeout(self.SOCKET_TIMEOUT)
@@ -131,7 +133,7 @@ class Client(indibase.indiBase.Client):
         except Exception:
             client.close()
         else:
-            client.shutdown()
+            client.shutdown(socket.SHUT_RDWR)
             client.close()
             suc = True
         finally:
