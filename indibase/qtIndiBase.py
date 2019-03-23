@@ -152,6 +152,16 @@ class Client(indibase.indiBase.Client):
         else:
             return False
 
+    def errorCycleCheckServerUp(self, e):
+        """
+        the cyclic or long lasting tasks for getting date from the mount should not run
+        twice for the same data at the same time. so there is a mutex to prevent this
+        behaviour. remove the mutex unlock this mutex.
+
+        :return: nothing
+        """
+        self.logger.error(f'Cycle error: {e}')
+
     def clearCycleCheckServerUp(self):
         """
         the cyclic or long lasting tasks for getting date from the mount should not run
@@ -179,6 +189,7 @@ class Client(indibase.indiBase.Client):
         worker = Worker(self.checkServerUp)
         worker.signals.finished.connect(self.clearCycleCheckServerUp)
         worker.signals.result.connect(self.checkServerUpResult)
+        worker.signals.error.connect(self.errorCycleCheckServerUp)
         self.threadpool.start(worker)
 
     def startTimers(self):
