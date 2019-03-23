@@ -14,8 +14,6 @@
 ###########################################################
 # standard libraries
 import logging
-import base64
-import socket
 # external packages
 import PyQt5.QtCore
 import PyQt5.QtNetwork
@@ -323,6 +321,7 @@ class Client(PyQt5.QtCore.QObject):
         :return: success for test purpose
         """
         self.host = (host, port)
+        self.connected = False
         return True
 
     def watchDevice(self, deviceName=''):
@@ -385,9 +384,9 @@ class Client(PyQt5.QtCore.QObject):
         :return: nothing
         """
 
-        self.connected = False
         self.logger.info('INDI client disconnected')
         self.disconnectServer()
+        self.connected = False
 
     def isServerConnected(self):
         """
@@ -736,7 +735,7 @@ class Client(PyQt5.QtCore.QObject):
 
         # now running through all atomic elements
         for elt in chunk.elt_list:
-            name = elt.attr.get('name','')
+            name = elt.attr.get('name', '')
             elementList[name] = {}
             elementList[name]['elementType'] = elt.etype
 
@@ -1014,4 +1013,3 @@ class Client(PyQt5.QtCore.QObject):
         self.connected = False
         self.logger.error('INDI client connection fault, error: {0}'.format(socketError))
         self.disconnectServer()
-ƒ

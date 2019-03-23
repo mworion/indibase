@@ -170,7 +170,7 @@ def test_disconnectServer4(qtbot):
     test.connectDevice('CCD Simulator')
     with qtbot.waitSignal(test.signals.serverDisconnected):
         with qtbot.waitSignal(test.signals.removeDevice) as b:
-            test.socket.abort()
+            test.socket.close()
     assert ['CCD Simulator'] == b.args
     assert 0 == len(test.devices)
 
