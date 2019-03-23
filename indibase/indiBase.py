@@ -1014,3 +1014,4 @@ class Client(PyQt5.QtCore.QObject):
         self.connected = False
         self.logger.error('INDI client connection fault, error: {0}'.format(socketError))
         self.disconnectServer()
+ƒ
