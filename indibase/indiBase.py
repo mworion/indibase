@@ -40,6 +40,11 @@ class INDISignals(PyQt5.QtCore.QObject):
     newNumber = PyQt5.QtCore.pyqtSignal(str, str)
     newText = PyQt5.QtCore.pyqtSignal(str, str)
     newLight = PyQt5.QtCore.pyqtSignal(str, str)
+    defBLOB = PyQt5.QtCore.pyqtSignal(str, str)
+    defSwitch = PyQt5.QtCore.pyqtSignal(str, str)
+    defNumber = PyQt5.QtCore.pyqtSignal(str, str)
+    defText = PyQt5.QtCore.pyqtSignal(str, str)
+    defLight = PyQt5.QtCore.pyqtSignal(str, str)
     newMessage = PyQt5.QtCore.pyqtSignal(str, str)
     serverConnected = PyQt5.QtCore.pyqtSignal()
     serverDisconnected = PyQt5.QtCore.pyqtSignal()
@@ -887,6 +892,18 @@ class Client(PyQt5.QtCore.QObject):
                              defVector=True)
 
         self.signals.newProperty.emit(deviceName, iProperty)
+
+        if isinstance(chunk, indiXML.DefBLOBVector):
+            self.signals.defBLOB.emit(deviceName, iProperty)
+        elif isinstance(chunk, indiXML.DefSwitchVector):
+            self.signals.defSwitch.emit(deviceName, iProperty)
+        elif isinstance(chunk, indiXML.DefNumberVector):
+            self.signals.defNumber.emit(deviceName, iProperty)
+        elif isinstance(chunk, indiXML.DefTextVector):
+            self.signals.defText.emit(deviceName, iProperty)
+        elif isinstance(chunk, indiXML.DefLightVector):
+            self.signals.defLight.emit(deviceName, iProperty)
+
         return True
 
     def _getProperty(self, chunk=None, device=None, deviceName=None):
