@@ -986,7 +986,7 @@ class Client(PyQt5.QtCore.QObject):
             self._getProperty(chunk=chunk, device=device, deviceName=deviceName)
             return True
 
-        if isinstance(chunk, indiXML.newSwitchVector):
+        if isinstance(chunk, indiXML.NewSwitchVector):
             # todo: what to do with the new switch vector ?
             return True
 
