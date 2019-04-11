@@ -361,7 +361,7 @@ class Client(PyQt5.QtCore.QObject):
         self.socket.connectToHost(*self._host)
         if not self.socket.waitForConnected(self.CONNECTION_TIMEOUT):
             self.connected = False
-            return True
+            return False
         self.connected = True
         self.signals.serverConnected.emit()
         return True
@@ -984,6 +984,10 @@ class Client(PyQt5.QtCore.QObject):
 
         if isinstance(chunk, indiXML.GetProperties):
             self._getProperty(chunk=chunk, device=device, deviceName=deviceName)
+            return True
+
+        if isinstance(chunk, indiXML.newSwitchVector):
+            # todo: what to do with the new switch vector ?
             return True
 
         self.logger.error('Unknown vectors: {0}'.format(chunk))
