@@ -17,7 +17,7 @@ import logging
 # external packages
 import PyQt5.QtCore
 import PyQt5.QtNetwork
-import xml.etree.ElementTree
+import xml.etree.cElementTree as ElementTree
 # local import
 from indibase import indiXML
 
@@ -241,7 +241,7 @@ class Client(PyQt5.QtCore.QObject):
                'setConnectionTimeout',
                ]
 
-    version = '0.51'
+    version = '0.52'
     logger = logging.getLogger(__name__)
 
     # INDI device types
@@ -288,7 +288,7 @@ class Client(PyQt5.QtCore.QObject):
         self.socket.disconnected.connect(self._handleDisconnected)
 
         # XML parser
-        self.parser = xml.etree.ElementTree.XMLPullParser(['start', 'end'])
+        self.parser = ElementTree.XMLPullParser(['start', 'end'])
         self.parser.feed('<root>')
         # clear the event queue of parser
         for _, _ in self.parser.read_events():

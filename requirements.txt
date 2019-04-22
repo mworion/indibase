@@ -1,7 +1,7 @@
 PyQt5==5.12
 PyQt5-sip==4.19.14
 numpy==1.16.2
-pytest==4.3.0
+pytest==4.4.1
 pytest-qt==3.2.2
 coverage==4.5.2
 flake8==3.7.7
