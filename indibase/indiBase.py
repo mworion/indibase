@@ -1017,9 +1017,9 @@ class Client(PyQt5.QtCore.QObject):
             if self.curDepth > 0:
                 continue
             # print('Depth: ', self.curDepth, '  Parsed: ', elem.items())
-            elem = indiXML.parseETree(elem)
-            self._parseCmd(elem)
-            del elem
+            elemParsed = indiXML.parseETree(elem)
+            elem.clear()
+            self._parseCmd(elemParsed)
 
     @PyQt5.QtCore.pyqtSlot(PyQt5.QtNetwork.QAbstractSocket.SocketError)
     def _handleError(self, socketError):

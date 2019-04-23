@@ -101,8 +101,7 @@ class Client(indibase.indiBase.Client):
     def __init__(self,
                  host=None,
                  ):
-        super().__init__(host=host,
-                         )
+        super().__init__(host=host)
 
         self.threadpool = PyQt5.QtCore.QThreadPool()
         self.mutexServerUp = PyQt5.QtCore.QMutex()
