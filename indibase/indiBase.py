@@ -17,7 +17,7 @@ import logging
 # external packages
 import PyQt5.QtCore
 import PyQt5.QtNetwork
-import xml.etree.cElementTree as ETree
+import xml.etree.ElementTree as ETree
 # local import
 from indibase import indiXML
 
