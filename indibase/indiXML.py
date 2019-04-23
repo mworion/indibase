@@ -123,7 +123,6 @@ class INDIBase(object):
         # Add attributes.
         for key in self.attr:
             etree.set(key, str(self.attr[key]))
-
         return etree
 
     def toXML(self):
