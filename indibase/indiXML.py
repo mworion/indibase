@@ -33,7 +33,7 @@ import base64
 import numbers
 import logging
 # external packages
-from xml.etree import cElementTree as ElementTree
+from xml.etree import cElementTree as ETree
 # local imports
 """
 
@@ -88,7 +88,7 @@ class INDIBase(object):
             for key in etree.attrib:
                 self.addAttr(key, etree.attrib[key])
         else:
-            raise IndiXMLException("Dictionary of arguments or XML ElementTree required.")
+            raise IndiXMLException("Dictionary of arguments or XML ETree required.")
 
     def __str__(self):
         if "name" in self.attr:
@@ -118,7 +118,7 @@ class INDIBase(object):
         self.attr[name] = value
 
     def toETree(self):
-        etree = ElementTree.Element(self.etype)
+        etree = ETree.Element(self.etype)
 
         # Add attributes.
         for key in self.attr:
@@ -127,7 +127,7 @@ class INDIBase(object):
         return etree
 
     def toXML(self):
-        return ElementTree.tostring(self.toETree(), 'utf-8')
+        return ETree.tostring(self.toETree(), 'utf-8')
 
 
 class INDIElement(INDIBase):

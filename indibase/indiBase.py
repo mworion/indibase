@@ -17,7 +17,7 @@ import logging
 # external packages
 import PyQt5.QtCore
 import PyQt5.QtNetwork
-import xml.etree.cElementTree as ElementTree
+import xml.etree.cElementTree as ETree
 # local import
 from indibase import indiXML
 
@@ -288,7 +288,7 @@ class Client(PyQt5.QtCore.QObject):
         self.socket.disconnected.connect(self._handleDisconnected)
 
         # XML parser
-        self.parser = ElementTree.XMLPullParser(['start', 'end'])
+        self.parser = ETree.XMLPullParser(['start', 'end'])
         self.parser.feed('<root>')
         # clear the event queue of parser
         for _, _ in self.parser.read_events():
