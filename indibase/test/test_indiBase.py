@@ -110,7 +110,7 @@ def test_connectServer1(qtbot):
     test.setServer('')
     with qtbot.assertNotEmitted(test.signals.serverConnected):
         suc = test.connectServer()
-        assert suc
+        assert not suc
     test.disconnectServer()
 
 
@@ -136,7 +136,7 @@ def test_connectServer3(qtbot):
 def test_connectServer_not_ok1(qtbot):
     test.setServer('')
     suc = test.connectServer()
-    assert suc
+    assert not suc
 
 
 def test_disconnectServer1(qtbot):
