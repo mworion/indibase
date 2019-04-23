@@ -33,7 +33,7 @@ import base64
 import numbers
 import logging
 # external packages
-from xml.etree import ElementTree as ETree
+import xml.etree.ElementTree as ETree
 # local imports
 """
 
