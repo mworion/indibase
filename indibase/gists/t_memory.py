@@ -19,7 +19,8 @@ import time
 # external packages
 import PyQt5
 import PyQt5.QtWidgets
-from pympler import muppy, summary
+from pympler import tracker
+
 # local import
 from indibase import qtIndiBase
 from indibase import indiXML
@@ -29,6 +30,7 @@ class IndiPythonBase(PyQt5.QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
+        self.tracker = tracker.SummaryTracker()
 
         self.client = qtIndiBase.Client(host='astrocomp.fritz.box')
         self.client.signals.serverConnected.connect(self.serverConnected)
@@ -80,9 +82,7 @@ class IndiPythonBase(PyQt5.QtWidgets.QWidget):
         return suc
 
     def showStat(self, deviceName, deviceProperty):
-        all_objects = muppy.get_objects()
-        sum1 = summary.summarize(all_objects)
-        summary.print_(sum1)
+        self.tracker.print_diff()
 
     def quit(self):
         self.close()
