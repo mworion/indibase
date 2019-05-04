@@ -986,14 +986,22 @@ class Client(PyQt5.QtCore.QObject):
             self._getProperty(chunk=chunk, device=device, deviceName=deviceName)
             return True
 
-        if isinstance(chunk, (indiXML.NewBlobVector,
+        if isinstance(chunk, (indiXML.NewBLOBVector,
                               indiXML.NewSwitchVector,
                               indiXML.NewTextVector,
-                              indiXML.NewLightVector,
                               indiXML.NewNumberVector,
                               )
                       ):
-            # todo: what to do with the new vector ?
+            # todo: what to do with the "New" vector ?
+            return True
+
+        if isinstance(chunk, (indiXML.OneBLOB,
+                              indiXML.OneSwitch,
+                              indiXML.OneText,
+                              indiXML.OneNumber,
+                              )
+                      ):
+            # todo: what to do with the "One" vector ?
             return True
 
         self.logger.error('Unknown vectors: {0}'.format(chunk))
