@@ -35,16 +35,19 @@ class INDISignals(PyQt5.QtCore.QObject):
     removeDevice = PyQt5.QtCore.pyqtSignal(str)
     newProperty = PyQt5.QtCore.pyqtSignal(str, str)
     removeProperty = PyQt5.QtCore.pyqtSignal(str, str)
+
     newBLOB = PyQt5.QtCore.pyqtSignal(str, str)
     newSwitch = PyQt5.QtCore.pyqtSignal(str, str)
     newNumber = PyQt5.QtCore.pyqtSignal(str, str)
     newText = PyQt5.QtCore.pyqtSignal(str, str)
     newLight = PyQt5.QtCore.pyqtSignal(str, str)
+
     defBLOB = PyQt5.QtCore.pyqtSignal(str, str)
     defSwitch = PyQt5.QtCore.pyqtSignal(str, str)
     defNumber = PyQt5.QtCore.pyqtSignal(str, str)
     defText = PyQt5.QtCore.pyqtSignal(str, str)
     defLight = PyQt5.QtCore.pyqtSignal(str, str)
+
     newMessage = PyQt5.QtCore.pyqtSignal(str, str)
     serverConnected = PyQt5.QtCore.pyqtSignal()
     serverDisconnected = PyQt5.QtCore.pyqtSignal()
