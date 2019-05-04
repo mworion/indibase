@@ -986,12 +986,12 @@ class Client(PyQt5.QtCore.QObject):
             self._getProperty(chunk=chunk, device=device, deviceName=deviceName)
             return True
 
-        if isinstance(chunk,
-                      indiXML.NewBlobVector,
-                      indiXML.NewSwitchVector,
-                      indiXML.NewTextVector,
-                      indiXML.NewLightVector,
-                      indiXML.NewNumberVector,
+        if isinstance(chunk, (indiXML.NewBlobVector,
+                              indiXML.NewSwitchVector,
+                              indiXML.NewTextVector,
+                              indiXML.NewLightVector,
+                              indiXML.NewNumberVector,
+                              )
                       ):
             # todo: what to do with the new vector ?
             return True
