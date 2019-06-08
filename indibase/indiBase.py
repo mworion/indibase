@@ -76,7 +76,7 @@ class Device(object):
                'getBlob',
                ]
 
-    version = '0.90'
+    version = '0.100'
     logger = logging.getLogger(__name__)
 
     def __init__(self,
