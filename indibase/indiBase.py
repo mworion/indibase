@@ -279,7 +279,6 @@ class Client(PyQt5.QtCore.QObject):
         # instance variables
         self.signals = INDISignals()
         self.connected = False
-        self.verbose = False
         self.blobMode = 'Never'
         self.devices = dict()
         self.curDepth = 0
@@ -651,7 +650,7 @@ class Client(PyQt5.QtCore.QObject):
         :return:
         """
 
-        self.verbose = bool(status)
+        pass
 
     def isVerbose(self):
         """
@@ -660,7 +659,7 @@ class Client(PyQt5.QtCore.QObject):
         :return: status of verbose
         """
 
-        return self.verbose
+        return False
 
     def setConnectionTimeout(self, seconds=2, microseconds=0):
         """
@@ -681,8 +680,6 @@ class Client(PyQt5.QtCore.QObject):
         :return: success of sending
         """
 
-        if self.verbose:
-            print(indiCommand.toXML())
         if self.connected:
             number = self.socket.write(indiCommand.toXML() + b'\n')
             self.socket.flush()
@@ -943,12 +940,14 @@ class Client(PyQt5.QtCore.QObject):
         :return: success if it could be parsed
         """
 
-        if self.verbose:
-            print(chunk)
         self.logger.debug('INDi XML chunk: {0}'.format(chunk))
 
         if 'device' not in chunk.attr:
             self.logger.error('No device in chunk: {0}'.format(chunk))
+            return False
+
+        if 'name' not in chunk.attr:
+            self.logger.error('No property in chunk: {0}'.format(chunk))
             return False
 
         device, deviceName = self._getDeviceReference(chunk=chunk)
@@ -956,10 +955,6 @@ class Client(PyQt5.QtCore.QObject):
         if isinstance(chunk, indiXML.Message):
             self._message(chunk=chunk, deviceName=deviceName)
             return True
-
-        if 'name' not in chunk.attr:
-            self.logger.error('No property in chunk: {0}'.format(chunk))
-            return False
 
         if isinstance(chunk, indiXML.DelProperty):
             self._delProperty(chunk=chunk, device=device, deviceName=deviceName)
