@@ -10,9 +10,8 @@ setup(
     ],
     python_requires='>=3.7.2',
     install_requires=[
-        'PyQt5>=5.12',
-        'PyQt5-sip>=4.19.14',
-        'numpy>=1.16.2',
+        'PyQt5>=5.12.2',
+        'numpy>=1.16.4',
     ],
     url='https://github.com/mworion/indibase',
     license='APL 2.0',
