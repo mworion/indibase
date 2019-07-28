@@ -10,7 +10,7 @@ setup(
     ],
     python_requires='>=3.7.2',
     install_requires=[
-        'PyQt5>=5.12.2',
+        'PyQt5>=5.13',
         'numpy>=1.16.4',
     ],
     url='https://github.com/mworion/indibase',
