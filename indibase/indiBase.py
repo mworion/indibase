@@ -946,15 +946,16 @@ class Client(PyQt5.QtCore.QObject):
             self.logger.error('No device in chunk: {0}'.format(chunk))
             return False
 
-        if 'name' not in chunk.attr:
-            self.logger.error('No property in chunk: {0}'.format(chunk))
-            return False
-
         device, deviceName = self._getDeviceReference(chunk=chunk)
 
+        # all message have no device names, they could be general
         if isinstance(chunk, indiXML.Message):
             self._message(chunk=chunk, deviceName=deviceName)
             return True
+
+        if 'name' not in chunk.attr:
+            self.logger.error('No property in chunk: {0}'.format(chunk))
+            return False
 
         if isinstance(chunk, indiXML.DelProperty):
             self._delProperty(chunk=chunk, device=device, deviceName=deviceName)
