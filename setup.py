@@ -11,7 +11,7 @@ setup(
     python_requires='>=3.7.2',
     install_requires=[
         'PyQt5>=5.13',
-        'numpy>=1.16.4',
+        'numpy==1.17',
     ],
     url='https://github.com/mworion/indibase',
     license='APL 2.0',
