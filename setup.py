@@ -18,4 +18,5 @@ setup(
     author='mw',
     author_email='michael@wuertenberger.org',
     description='indi base client in python based on qt',
+    zip_safe=True,
 )
