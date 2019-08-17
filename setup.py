@@ -8,7 +8,7 @@ setup(
     packages=[
         'indibase',
     ],
-    python_requires='>=3.7.2',
+    python_requires='>=3.7.4',
     install_requires=[
         'PyQt5>=5.13',
         'numpy==1.17',
