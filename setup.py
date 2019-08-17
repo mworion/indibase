@@ -1,14 +1,20 @@
 # from distutils.core import setup
 from setuptools import setup
-from indibase.indiBase import Client
+# from indibase.indiBase import Client
+
+indibase_version = '0.105'
 
 setup(
     name='indibase',
-    version=Client.version,
+    version=indibase_version,
     packages=[
         'indibase',
     ],
     python_requires='>=3.7.4',
+    setup_requires=[
+        'PyQt5>=5.13',
+        'numpy==1.17',
+    ],
     install_requires=[
         'PyQt5>=5.13',
         'numpy==1.17',
