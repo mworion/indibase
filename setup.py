@@ -43,4 +43,5 @@ setup(
         'Operating System :: OS Independent',
         'Topic :: Utilities',
         'License :: OSI Approved :: Apache Software License',
+    ],
 )
