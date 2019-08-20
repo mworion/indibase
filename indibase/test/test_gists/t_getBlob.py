@@ -9,7 +9,7 @@
 # Michael Würtenberger
 # (c) 2018
 #
-# Licence APL2.0
+## Licence APL2.0
 #
 ###########################################################
 # standard libraries

@@ -1,13 +1,19 @@
 ############################################################
 # -*- coding: utf-8 -*-
 #
-# INDIBASE
+#       #   #  #   #   #    #
+#      ##  ##  #  ##  #    #
+#     # # # #  # # # #    #  #
+#    #  ##  #  ##  ##    ######
+#   #   #   #  #   #       #
 #
+# Python-based Tool for interaction with the 10micron mounts
 # GUI with PyQT5 for python
-# Python  v3.6.5
+# Python  v3.7.4
+
 #
 # Michael Würtenberger
-# (c) 2018
+# (c) 2019
 #
 # Licence APL2.0
 #
