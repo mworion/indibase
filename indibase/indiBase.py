@@ -946,7 +946,7 @@ class Client(PyQt5.QtCore.QObject):
         :return: success if it could be parsed
         """
 
-        self.logger.debug('INDi XML chunk: {0}'.format(chunk))
+        self.logger.debug('INDI XML chunk: {0}'.format(chunk))
 
         if 'device' not in chunk.attr:
             self.logger.error('No device in chunk: {0}'.format(chunk))
