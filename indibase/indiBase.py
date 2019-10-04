@@ -288,19 +288,14 @@ class Client(PyQt5.QtCore.QObject):
         self.blobMode = 'Never'
         self.devices = dict()
         self.curDepth = 0
+        self.parser = None
 
         # tcp handling
         self.socket = PyQt5.QtNetwork.QTcpSocket()
         self.socket.readyRead.connect(self._handleReadyRead)
         self.socket.error.connect(self._handleError)
         self.socket.disconnected.connect(self._handleDisconnected)
-
-        # XML parser
-        self.parser = ETree.XMLPullParser(['start', 'end'])
-        self.parser.feed('<root>')
-        # clear the event queue of parser
-        for _, _ in self.parser.read_events():
-            pass
+        self.clearParser()
 
     @property
     def host(self):
@@ -323,6 +318,20 @@ class Client(PyQt5.QtCore.QObject):
     def host(self, value):
         value = self.checkFormat(value)
         self._host = value
+
+    def clearParser(self):
+        """
+
+        :return: success for test purpose
+        """
+        # XML parser
+        self.parser = ETree.XMLPullParser(['start', 'end'])
+        self.parser.feed('<root>')
+        # clear the event queue of parser
+        for _, _ in self.parser.read_events():
+            pass
+
+        return True
 
     def setServer(self, host='', port=7624):
         """
@@ -382,12 +391,11 @@ class Client(PyQt5.QtCore.QObject):
         :return: success
         """
 
-        if not self.connected:
-            return True
-        self._clearDevices()
+        self.connected = False
+        self.clearParser()
+        self.clearDevices()
         self.socket.abort()
         self.signals.serverDisconnected.emit()
-        self.connected = False
         return True
 
     @PyQt5.QtCore.pyqtSlot()
@@ -719,9 +727,9 @@ class Client(PyQt5.QtCore.QObject):
         else:
             return -1
 
-    def _clearDevices(self):
+    def clearDevices(self):
         """
-        _clearDevices deletes all the actual knows devices and sens out the appropriate
+        clearDevices deletes all the actual knows devices and sens out the appropriate
         qt signals
 
         :return: success for test purpose
@@ -947,6 +955,8 @@ class Client(PyQt5.QtCore.QObject):
         """
 
         self.logger.debug('INDI XML chunk: {0}'.format(chunk))
+        if not self.connected:
+            return False
 
         if 'device' not in chunk.attr:
             self.logger.error('No device in chunk: {0}'.format(chunk))
