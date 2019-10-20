@@ -22,7 +22,7 @@ from setuptools import setup
 
 setup(
     name='indibase',
-    version='0.106',
+    version='0.107',
     packages=[
         'indibase',
     ],
@@ -39,7 +39,7 @@ setup(
     zip_safe=True,
     classifiers=[
         'Development Status :: 3 - Alpha',
-        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.7',
         'Operating System :: OS Independent',
         'Topic :: Utilities',
         'License :: OSI Approved :: Apache Software License',
