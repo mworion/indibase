@@ -383,33 +383,37 @@ class Client(PyQt5.QtCore.QObject):
         self.signals.serverConnected.emit()
         return True
 
-    def clearDevices(self):
+    def clearDevices(self, deviceName):
         """
         clearDevices deletes all the actual knows devices and sens out the appropriate
         qt signals
 
+        :param deviceName: name string of INDI device
         :return: success for test purpose
         """
 
-        for deviceName in self.devices:
-            self.signals.removeDevice.emit(deviceName)
-            self.signals.deviceDisconnected.emit(deviceName)
-            self.logger.info('Remove device {0}'.format(deviceName))
+        for device in self.devices:
+            if not device == deviceName:
+                continue
+            self.signals.removeDevice.emit(device)
+            self.signals.deviceDisconnected.emit(device)
+            self.logger.info('Remove device {0}'.format(device))
         self.devices = {}
         return True
 
-    def disconnectServer(self):
+    def disconnectServer(self, deviceName):
         """
         Part of BASE CLIENT API of EKOS
         disconnect drops the connection to the indi server
 
+        :param deviceName: name string of INDI device
         :return: success
         """
 
         self.connected = False
         self.clearParser()
         self.signals.serverDisconnected.emit(self.devices)
-        self.clearDevices()
+        self.clearDevices(deviceName)
         self.socket.abort()
         return True
 
@@ -422,7 +426,7 @@ class Client(PyQt5.QtCore.QObject):
         """
 
         self.logger.info('INDI client disconnected')
-        self.disconnectServer()
+        self.disconnectServer(self.name)
 
     def isServerConnected(self):
         """
@@ -681,7 +685,8 @@ class Client(PyQt5.QtCore.QObject):
 
         pass
 
-    def isVerbose(self):
+    @staticmethod
+    def isVerbose():
         """
         Part of BASE CLIENT API of EKOS
 
@@ -1062,4 +1067,4 @@ class Client(PyQt5.QtCore.QObject):
         if not self.connected:
             return
         self.logger.error('INDI client connection fault, error: {0}'.format(socketError))
-        self.disconnectServer()
+        self.disconnectServer(self.name)
