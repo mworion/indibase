@@ -101,7 +101,7 @@ class Client(indibase.indiBase.Client):
     logger = logging.getLogger(__name__)
 
     # socket timeout for testing if server is present
-    SOCKET_TIMEOUT = 0.5
+    SOCKET_TIMEOUT = 1
     # cycle timer for checking server up
     CYCLE_SERVER_UP = 1000
 

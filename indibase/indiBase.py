@@ -273,7 +273,7 @@ class Client(PyQt5.QtCore.QObject):
     DEFAULT_PORT = 7624
 
     # timeout for client to server
-    CONNECTION_TIMEOUT = 200
+    CONNECTION_TIMEOUT = 1000
 
     def __init__(self,
                  host=None,
@@ -381,6 +381,21 @@ class Client(PyQt5.QtCore.QObject):
             return False
         self.connected = True
         self.signals.serverConnected.emit()
+        return True
+
+    def clearDevices(self):
+        """
+        clearDevices deletes all the actual knows devices and sens out the appropriate
+        qt signals
+
+        :return: success for test purpose
+        """
+
+        for deviceName in self.devices:
+            self.signals.removeDevice.emit(deviceName)
+            self.signals.deviceDisconnected.emit(deviceName)
+            self.logger.info('Remove device {0}'.format(deviceName))
+        self.devices = {}
         return True
 
     def disconnectServer(self):
@@ -726,21 +741,6 @@ class Client(PyQt5.QtCore.QObject):
                 return -1
         else:
             return -1
-
-    def clearDevices(self):
-        """
-        clearDevices deletes all the actual knows devices and sens out the appropriate
-        qt signals
-
-        :return: success for test purpose
-        """
-
-        for deviceName in self.devices:
-            self.signals.removeDevice.emit(deviceName)
-            self.signals.deviceDisconnected.emit(deviceName)
-            self.logger.info('Remove device {0}'.format(deviceName))
-        self.devices = {}
-        return True
 
     def _fillAttributes(self, deviceName=None, chunk=None, elementList=None, defVector=None):
         """
