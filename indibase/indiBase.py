@@ -401,7 +401,7 @@ class Client(PyQt5.QtCore.QObject):
         self.devices = {}
         return True
 
-    def disconnectServer(self, deviceName):
+    def disconnectServer(self, deviceName=''):
         """
         Part of BASE CLIENT API of EKOS
         disconnect drops the connection to the indi server
@@ -426,7 +426,7 @@ class Client(PyQt5.QtCore.QObject):
         """
 
         self.logger.info('INDI client disconnected')
-        self.disconnectServer(self.name)
+        self.disconnectServer()
 
     def isServerConnected(self):
         """
@@ -1067,4 +1067,4 @@ class Client(PyQt5.QtCore.QObject):
         if not self.connected:
             return
         self.logger.error('INDI client connection fault, error: {0}'.format(socketError))
-        self.disconnectServer(self.name)
+        self.disconnectServer()
