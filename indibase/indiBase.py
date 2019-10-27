@@ -56,7 +56,7 @@ class INDISignals(PyQt5.QtCore.QObject):
 
     newMessage = PyQt5.QtCore.pyqtSignal(str, str)
     serverConnected = PyQt5.QtCore.pyqtSignal()
-    serverDisconnected = PyQt5.QtCore.pyqtSignal()
+    serverDisconnected = PyQt5.QtCore.pyqtSignal(object)
     deviceConnected = PyQt5.QtCore.pyqtSignal(str)
     deviceDisconnected = PyQt5.QtCore.pyqtSignal(str)
 
@@ -393,9 +393,9 @@ class Client(PyQt5.QtCore.QObject):
 
         self.connected = False
         self.clearParser()
+        self.signals.serverDisconnected.emit(self.devices)
         self.clearDevices()
         self.socket.abort()
-        self.signals.serverDisconnected.emit()
         return True
 
     @PyQt5.QtCore.pyqtSlot()
