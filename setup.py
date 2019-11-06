@@ -22,14 +22,14 @@ from setuptools import setup
 
 setup(
     name='indibase',
-    version='0.110',
+    version='0.111',
     packages=[
         'indibase',
     ],
     python_requires='>=3.7.2',
     install_requires=[
-        'PyQt5>=5.13',
-        'numpy>=1.17',
+        'PyQt5==5.13.2',
+        'numpy==1.17.3',
     ],
     url='https://github.com/mworion/MountWizzard4',
     license='APL 2.0',
