@@ -100,9 +100,9 @@ class Client(indibase.indiBase.Client):
     logger = logging.getLogger(__name__)
 
     # socket timeout for testing if server is present
-    SOCKET_TIMEOUT = 3
+    SOCKET_TIMEOUT = 1
     # cycle timer for checking server up
-    CYCLE_SERVER_UP = 3000
+    CYCLE_SERVER_UP = 1000
 
     def __init__(self,
                  host=None,
@@ -124,10 +124,6 @@ class Client(indibase.indiBase.Client):
         :return: nothing
         """
 
-        if self.connected:
-            return True
-
-        suc = False
         socket.setdefaulttimeout(self.SOCKET_TIMEOUT)
         client = socket.socket()
         client.settimeout(self.SOCKET_TIMEOUT)
@@ -135,12 +131,12 @@ class Client(indibase.indiBase.Client):
             client.connect(self.host)
         except Exception:
             client.close()
+            suc = False
         else:
             client.shutdown(socket.SHUT_RDWR)
             client.close()
             suc = True
-        finally:
-            pass
+
         return suc
 
     def checkServerUpResult(self, result):
@@ -150,9 +146,13 @@ class Client(indibase.indiBase.Client):
         :return:
         """
 
-        if result:
+        if result and not self.connected:
             suc = self.connectServer()
-            self.logger.debug(f'Try to connect to server, result: {suc}')
+            self.logger.info(f'Connect to server, result: {suc}')
+            return suc
+        elif not result and self.connected:
+            suc = self.disconnectServer()
+            self.logger.info(f'Disconnect from server, result: {suc}')
             return suc
         else:
             return False
@@ -186,8 +186,6 @@ class Client(indibase.indiBase.Client):
         :return: nothing
         """
 
-        if self.connected:
-            return
         if not self.mutexServerUp.tryLock():
             return
         worker = Worker(self.checkServerUp)

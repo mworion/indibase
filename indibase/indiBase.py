@@ -59,6 +59,8 @@ class INDISignals(PyQt5.QtCore.QObject):
     deviceConnected = PyQt5.QtCore.pyqtSignal(str)
     deviceDisconnected = PyQt5.QtCore.pyqtSignal(str)
 
+    serverAlive = PyQt5.QtCore.pyqtSignal(bool)
+
 
 class Device(object):
     """
@@ -390,7 +392,7 @@ class Client(PyQt5.QtCore.QObject):
         """
 
         for device in self.devices:
-            if not device == deviceName:
+            if not device == deviceName and deviceName:
                 continue
             self.signals.removeDevice.emit(device)
             self.signals.deviceDisconnected.emit(device)
