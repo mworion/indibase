@@ -35,7 +35,6 @@ class WorkerSignals(PyQt5.QtCore.QObject):
     """
 
     __all__ = ['WorkerSignals']
-    version = '0.1'
 
     finished = PyQt5.QtCore.pyqtSignal()
     error = PyQt5.QtCore.pyqtSignal(object)
@@ -50,7 +49,7 @@ class Worker(PyQt5.QtCore.QRunnable):
 
     __all__ = ['Worker',
                'run']
-    version = '0.1'
+
     logger = logging.getLogger(__name__)
 
     def __init__(self, fn, *args, **kwargs):
@@ -103,7 +102,7 @@ class Client(indibase.indiBase.Client):
     # socket timeout for testing if server is present
     SOCKET_TIMEOUT = 3
     # cycle timer for checking server up
-    CYCLE_SERVER_UP = 2000
+    CYCLE_SERVER_UP = 3000
 
     def __init__(self,
                  host=None,
@@ -190,7 +189,6 @@ class Client(indibase.indiBase.Client):
         if self.connected:
             return
         if not self.mutexServerUp.tryLock():
-            self.logger.info('overrun in check server up')
             return
         worker = Worker(self.checkServerUp)
         worker.signals.finished.connect(self.clearCycleCheckServerUp)
