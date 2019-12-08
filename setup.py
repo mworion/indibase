@@ -22,13 +22,13 @@ from setuptools import setup
 
 setup(
     name='indibase',
-    version='0.115',
+    version='0.116',
     packages=[
         'indibase',
     ],
     python_requires='>=3.7.2',
     install_requires=[
-        'PyQt5==5.13.2',
+        'PyQt5==5.13.2; platform_machine != "armv7l"',
         'numpy==1.17.3',
     ],
     url='https://github.com/mworion/MountWizzard4',
