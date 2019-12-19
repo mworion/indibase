@@ -54,8 +54,8 @@ class INDISignals(PyQt5.QtCore.QObject):
     defLight = PyQt5.QtCore.pyqtSignal(str, str)
 
     newMessage = PyQt5.QtCore.pyqtSignal(str, str)
-    serverConnected = PyQt5.QtCore.pyqtSignal()
-    serverDisconnected = PyQt5.QtCore.pyqtSignal(object)
+    serverConnected = PyQt5.QtCore.pyqtSignal(str)
+    serverDisconnected = PyQt5.QtCore.pyqtSignal(str)
     deviceConnected = PyQt5.QtCore.pyqtSignal(str)
     deviceDisconnected = PyQt5.QtCore.pyqtSignal(str)
 
@@ -372,14 +372,14 @@ class Client(PyQt5.QtCore.QObject):
         if len(self._host) != 2:
             return False
         if self.connected:
-            self.signals.serverConnected.emit()
+            self.signals.serverConnected.emit(self.host)
             return True
         self.socket.connectToHost(*self._host)
         if not self.socket.waitForConnected(self.CONNECTION_TIMEOUT):
             self.connected = False
             return False
         self.connected = True
-        self.signals.serverConnected.emit()
+        self.signals.serverConnected.emit(self.host)
         return True
 
     def clearDevices(self, deviceName):
@@ -411,7 +411,7 @@ class Client(PyQt5.QtCore.QObject):
 
         self.connected = False
         self.clearParser()
-        self.signals.serverDisconnected.emit(self.devices)
+        self.signals.serverDisconnected.emit(list(deviceList.keys())[0])
         self.clearDevices(deviceName)
         self.socket.abort()
         return True
