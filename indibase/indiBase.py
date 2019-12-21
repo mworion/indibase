@@ -394,7 +394,7 @@ class Client(PyQt5.QtCore.QObject):
             if not device == deviceName and deviceName:
                 continue
             self.signals.removeDevice.emit(device)
-            self.signals.deviceDisconnected.emit(device)
+            # self.signals.deviceDisconnected.emit(device)
             self.logger.info('Remove device {0}'.format(device))
         self.devices = {}
         return True
