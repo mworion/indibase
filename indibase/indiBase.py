@@ -371,7 +371,7 @@ class Client(PyQt5.QtCore.QObject):
         if len(self._host) != 2:
             return False
         if self.connected:
-            self.signals.serverConnected.emit()
+            # self.signals.serverConnected.emit()
             return True
         self.socket.connectToHost(*self._host)
         if not self.socket.waitForConnected(self.CONNECTION_TIMEOUT):
@@ -424,7 +424,6 @@ class Client(PyQt5.QtCore.QObject):
         """
 
         self.logger.info('INDI client disconnected')
-        self.disconnectServer()
 
     def isServerConnected(self):
         """
