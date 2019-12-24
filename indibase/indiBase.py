@@ -353,8 +353,12 @@ class Client(PyQt5.QtCore.QObject):
         :param deviceName: name string of INDI device
         :return: success for test purpose
         """
-        cmd = indiXML.clientGetProperties(indi_attr={'version': '1.7',
-                                                     'device': deviceName})
+        if deviceName:
+            cmd = indiXML.clientGetProperties(indi_attr={'version': '1.7',
+                                                         'device': deviceName})
+        else:
+            cmd = indiXML.clientGetProperties(indi_attr={'version': '1.7'})
+
         suc = self._sendCmd(cmd)
         return suc
 
