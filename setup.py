@@ -22,11 +22,11 @@ from setuptools import setup
 
 setup(
     name='indibase',
-    version='0.120',
+    version='0.121',
     packages=[
         'indibase',
     ],
-    python_requires='>=3.7.0, <3.8',
+    python_requires='>=3.6.0, <4.0',
     install_requires=[
         'PyQt5==5.13.2; platform_machine != "armv7l"',
         'numpy==1.17.3',
