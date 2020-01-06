@@ -19,8 +19,6 @@
 ###########################################################
 # standard libraries
 import logging
-import warnings
-import datetime
 # external packages
 # local imports
 

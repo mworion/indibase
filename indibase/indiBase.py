@@ -163,7 +163,7 @@ class Device(object):
         retDict = {}
         for prop in elementList:
             retDict[prop] = elementList[prop]['value']
-        self.log.info(f'Get switch  [{self.name}]: {retDict}')
+        self.log.info(f'Get switch [{self.name}]: {retDict}')
         return retDict
 
     def getLight(self, propertyName):
