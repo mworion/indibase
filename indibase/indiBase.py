@@ -115,7 +115,7 @@ class Device(object):
         retDict = {}
         for prop in elementList:
             retDict[prop] = elementList[prop]['value']
-        self.log.info('Get number: {0}'.format(retDict))
+        self.log.info(f'Get number [{self.name}]: {retDict}')
         return retDict
 
     def getText(self, propertyName):
@@ -139,7 +139,7 @@ class Device(object):
         retDict = {}
         for prop in elementList:
             retDict[prop] = elementList[prop]['value']
-        self.log.info('Get text: {0}'.format(retDict))
+        self.log.info(f'Get text   [{self.name}]: {retDict}')
         return retDict
 
     def getSwitch(self, propertyName):
@@ -163,7 +163,7 @@ class Device(object):
         retDict = {}
         for prop in elementList:
             retDict[prop] = elementList[prop]['value']
-        self.log.info('Get switch: {0}'.format(retDict))
+        self.log.info(f'Get switch  [{self.name}]: {retDict}')
         return retDict
 
     def getLight(self, propertyName):
@@ -187,7 +187,7 @@ class Device(object):
         retDict = {}
         for prop in elementList:
             retDict[prop] = elementList[prop]['value']
-        self.log.info('Get light: {0}'.format(retDict))
+        self.log.info(f'Get light  [{self.name}]: {retDict}')
         return retDict
 
     def getBlob(self, propertyName):
@@ -208,7 +208,7 @@ class Device(object):
             self.log.error('Property: {0} is not Blob'.format(iProperty['propertyType']))
             return
         elementList = iProperty['elementList']
-        self.log.info('Get blob')
+        self.log.info(f'Get blob   [{self.name}]')
         return elementList[propertyName]
 
 
