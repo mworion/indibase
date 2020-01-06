@@ -25,6 +25,7 @@ import PyQt5.QtCore
 import PyQt5.QtNetwork
 import xml.etree.ElementTree as ETree
 # local import
+from indibase.loggerMW import CustomLogger
 from indibase import indiXML
 
 
@@ -84,6 +85,7 @@ class Device(object):
                ]
 
     logger = logging.getLogger(__name__)
+    log = CustomLogger(logger, {})
 
     def __init__(self,
                  name='',
@@ -107,13 +109,13 @@ class Device(object):
         iProperty = getattr(self, propertyName)
         if iProperty['propertyType'] not in ['defNumberVector',
                                              'setNumberVector']:
-            self.logger.error('Property: {0} is not Number'.format(iProperty['propertyType']))
+            self.log.error('Property: {0} is not Number'.format(iProperty['propertyType']))
             return
         elementList = iProperty['elementList']
         retDict = {}
         for prop in elementList:
             retDict[prop] = elementList[prop]['value']
-        self.logger.debug('Get number: {0}'.format(retDict))
+        self.log.info('Get number: {0}'.format(retDict))
         return retDict
 
     def getText(self, propertyName):
@@ -131,13 +133,13 @@ class Device(object):
         iProperty = getattr(self, propertyName)
         if iProperty['propertyType'] not in ['defTextVector',
                                              'setTextVector']:
-            self.logger.error('Property: {0} is not Text'.format(iProperty['propertyType']))
+            self.log.error('Property: {0} is not Text'.format(iProperty['propertyType']))
             return
         elementList = iProperty['elementList']
         retDict = {}
         for prop in elementList:
             retDict[prop] = elementList[prop]['value']
-        self.logger.debug('Get text: {0}'.format(retDict))
+        self.log.info('Get text: {0}'.format(retDict))
         return retDict
 
     def getSwitch(self, propertyName):
@@ -155,13 +157,13 @@ class Device(object):
         iProperty = getattr(self, propertyName)
         if iProperty['propertyType'] not in ['defSwitchVector',
                                              'setSwitchVector']:
-            self.logger.error('Property: {0} is not Switch'.format(iProperty['propertyType']))
+            self.log.error('Property: {0} is not Switch'.format(iProperty['propertyType']))
             return
         elementList = iProperty['elementList']
         retDict = {}
         for prop in elementList:
             retDict[prop] = elementList[prop]['value']
-        self.logger.debug('Get switch: {0}'.format(retDict))
+        self.log.info('Get switch: {0}'.format(retDict))
         return retDict
 
     def getLight(self, propertyName):
@@ -179,13 +181,13 @@ class Device(object):
         iProperty = getattr(self, propertyName)
         if iProperty['propertyType'] not in ['defLightVector',
                                              'setLightVector']:
-            self.logger.error('Property: {0} is not Light'.format(iProperty['propertyType']))
+            self.log.error('Property: {0} is not Light'.format(iProperty['propertyType']))
             return
         elementList = iProperty['elementList']
         retDict = {}
         for prop in elementList:
             retDict[prop] = elementList[prop]['value']
-        self.logger.debug('Get light: {0}'.format(retDict))
+        self.log.info('Get light: {0}'.format(retDict))
         return retDict
 
     def getBlob(self, propertyName):
@@ -203,10 +205,10 @@ class Device(object):
         iProperty = getattr(self, propertyName)
         if iProperty['propertyType'] not in ['defBLOBVector',
                                              'setBLOBVector']:
-            self.logger.error('Property: {0} is not Blob'.format(iProperty['propertyType']))
+            self.log.error('Property: {0} is not Blob'.format(iProperty['propertyType']))
             return
         elementList = iProperty['elementList']
-        self.logger.debug('Get blob')
+        self.log.info('Get blob')
         return elementList[propertyName]
 
 
@@ -251,6 +253,7 @@ class Client(PyQt5.QtCore.QObject):
                ]
 
     logger = logging.getLogger(__name__)
+    log = CustomLogger(logger, {})
 
     # INDI device types
     GENERAL_INTERFACE = 0
@@ -305,7 +308,7 @@ class Client(PyQt5.QtCore.QObject):
         if not value:
             return None
         if not isinstance(value, (tuple, str)):
-            self.logger.error('wrong host value: {0}'.format(value))
+            self.log.warning('wrong host value: {0}'.format(value))
             return None
         # now we got the right format
         if isinstance(value, str):
@@ -399,7 +402,7 @@ class Client(PyQt5.QtCore.QObject):
                 continue
             self.signals.removeDevice.emit(device)
             # self.signals.deviceDisconnected.emit(device)
-            self.logger.info('Remove device {0}'.format(device))
+            self.log.warning('Remove device {0}'.format(device))
         self.devices = {}
         return True
 
@@ -427,7 +430,7 @@ class Client(PyQt5.QtCore.QObject):
         :return: nothing
         """
 
-        self.logger.info('INDI client disconnected')
+        self.log.warning('INDI client disconnected')
 
     def isServerConnected(self):
         """
@@ -485,7 +488,8 @@ class Client(PyQt5.QtCore.QObject):
         :return: dict with data of that give device
         """
 
-        return self.devices.get(deviceName, None)
+        value = self.devices.get(deviceName, None)
+        return value
 
     def getDevices(self, driverInterface=0xFFFF):
         """
@@ -791,10 +795,10 @@ class Client(PyQt5.QtCore.QObject):
             # send connected signals
             if name == 'CONNECT' and elt.getValue() == 'On':
                 self.signals.deviceConnected.emit(deviceName)
-                self.logger.info('Device {0} connected'.format(deviceName))
+                self.log.warning('Device {0} connected'.format(deviceName))
             if name == 'DISCONNECT' and elt.getValue() == 'On':
                 self.signals.deviceDisconnected.emit(deviceName)
-                self.logger.info('Device {0} disconnected'.format(deviceName))
+                self.log.warning('Device {0} disconnected'.format(deviceName))
 
         return True
 
@@ -838,7 +842,7 @@ class Client(PyQt5.QtCore.QObject):
         if deviceName not in self.devices:
             self.devices[deviceName] = Device(deviceName)
             self.signals.newDevice.emit(deviceName)
-            self.logger.info('New device {0}'.format(deviceName))
+            self.log.warning('New device {0}'.format(deviceName))
 
         device = self.devices[deviceName]
         return device, deviceName
@@ -861,7 +865,7 @@ class Client(PyQt5.QtCore.QObject):
         if hasattr(device, iProperty):
             delattr(device, iProperty)
             self.signals.removeProperty.emit(deviceName, iProperty)
-            self.logger.info('New device [{0}] property {1}'.format(deviceName, iProperty))
+            self.log.warning('New device [{0}] property {1}'.format(deviceName, iProperty))
         return True
 
     def _setProperty(self, chunk=None, device=None, deviceName=None):
@@ -960,12 +964,12 @@ class Client(PyQt5.QtCore.QObject):
         :return: success if it could be parsed
         """
 
-        self.logger.debug('INDI XML chunk: {0}'.format(chunk))
+        self.log.debug('INDI XML chunk: {0}'.format(chunk))
         if not self.connected:
             return False
 
         if 'device' not in chunk.attr:
-            self.logger.error('No device in chunk: {0}'.format(chunk))
+            self.log.error('No device in chunk: {0}'.format(chunk))
             return False
 
         device, deviceName = self._getDeviceReference(chunk=chunk)
@@ -976,7 +980,7 @@ class Client(PyQt5.QtCore.QObject):
             return True
 
         if 'name' not in chunk.attr:
-            self.logger.error('No property in chunk: {0}'.format(chunk))
+            self.log.error('No property in chunk: {0}'.format(chunk))
             return False
 
         if isinstance(chunk, indiXML.DelProperty):
@@ -1025,7 +1029,7 @@ class Client(PyQt5.QtCore.QObject):
             # todo: what to do with the "One" vector ?
             return True
 
-        self.logger.error('Unknown vectors: {0}'.format(chunk))
+        self.log.error('Unknown vectors: {0}'.format(chunk))
         return False
 
     @PyQt5.QtCore.pyqtSlot()
@@ -1048,7 +1052,7 @@ class Client(PyQt5.QtCore.QObject):
             elif event == 'end':
                 self.curDepth -= 1
             else:
-                self.logger.error('Problem parsing event: {0}'.format(event))
+                self.log.critical('Problem parsing event: {0}'.format(event))
             if self.curDepth > 0:
                 continue
             # print('Depth: ', self.curDepth, '  Parsed: ', elem.items())
@@ -1067,5 +1071,5 @@ class Client(PyQt5.QtCore.QObject):
 
         if not self.connected:
             return
-        self.logger.error('INDI client connection fault, error: {0}'.format(socketError))
+        self.log.error('INDI client connection fault, error: {0}'.format(socketError))
         self.disconnectServer()

@@ -22,7 +22,7 @@ from setuptools import setup
 
 setup(
     name='indibase',
-    version='0.122',
+    version='0.123',
     packages=[
         'indibase',
     ],

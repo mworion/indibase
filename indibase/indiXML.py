@@ -41,6 +41,8 @@ import logging
 # external packages
 import xml.etree.ElementTree as ETree
 # local imports
+from indibase.loggerMW import CustomLogger
+
 """
 
 An implementation of the INDI protocol - Copyright 2003-2007 Elwood Charles Downey
@@ -71,9 +73,10 @@ Notes:
 
 class IndiXMLException:
     logger = logging.getLogger(__name__)
+    log = CustomLogger(logger, {})
 
     def __init__(self, msg):
-        self.logger.error('IndiXMLException: {0}'.format(msg))
+        self.log.critical('IndiXMLException: {0}'.format(msg))
 
 
 class INDIBase(object):
@@ -81,6 +84,7 @@ class INDIBase(object):
     INDI command base classes.
     """
     logger = logging.getLogger(__name__)
+    log = CustomLogger(logger, {})
 
     def __init__(self, etype, value, attr_dict, etree):
         self.etype = etype
@@ -150,7 +154,7 @@ class INDIElement(INDIBase):
                 self.value = etree.text.strip()
             else:
                 self.value = ''
-                # self.logger.warning('Got None for {0}'.format(self.etype))
+                # self.log.error('Got None for {0}'.format(self.etype))
 
     def __str__(self):
         base_str = INDIBase.__str__(self)
