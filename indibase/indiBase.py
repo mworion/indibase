@@ -1045,20 +1045,22 @@ class Client(PyQt5.QtCore.QObject):
 
         buf = self.socket.readAll()
         self.parser.feed(buf)
-        for event, elem in self.parser.read_events():
-            # print(self.curDepth, event, elem.tag, elem.items(), '\n')
-            if event == 'start':
-                self.curDepth += 1
-            elif event == 'end':
-                self.curDepth -= 1
-            else:
-                self.log.critical('Problem parsing event: {0}'.format(event))
-            if self.curDepth > 0:
-                continue
-            # print('Depth: ', self.curDepth, '  Parsed: ', elem.items())
-            elemParsed = indiXML.parseETree(elem)
-            elem.clear()
-            self._parseCmd(elemParsed)
+        try:
+            for event, elem in self.parser.read_events():
+                if event == 'start':
+                    self.curDepth += 1
+                elif event == 'end':
+                    self.curDepth -= 1
+                else:
+                    self.log.critical('Problem parsing event: {0}'.format(event))
+                if self.curDepth > 0:
+                    continue
+                # print('Depth: ', self.curDepth, '  Parsed: ', elem.items())
+                elemParsed = indiXML.parseETree(elem)
+                elem.clear()
+                self._parseCmd(elemParsed)
+        except Exception as e:
+            self.log.error(f'{e}: {buf}')
 
     @PyQt5.QtCore.pyqtSlot(PyQt5.QtNetwork.QAbstractSocket.SocketError)
     def _handleError(self, socketError):
