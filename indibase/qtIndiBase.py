@@ -102,7 +102,7 @@ class Client(indibase.indiBase.Client):
     # socket timeout for testing if server is present
     SOCKET_TIMEOUT = 3
     # cycle timer for checking server up
-    CYCLE_SERVER_UP = 3000
+    CYCLE_SERVER_UP = 3500
 
     def __init__(self,
                  host=None,
@@ -124,7 +124,6 @@ class Client(indibase.indiBase.Client):
         :return: nothing
         """
 
-        socket.setdefaulttimeout(self.SOCKET_TIMEOUT)
         client = socket.socket()
         client.settimeout(self.SOCKET_TIMEOUT)
         try:
