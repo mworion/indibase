@@ -115,7 +115,7 @@ class Client(indibase.indiBase.Client):
         else:
             self.threadPool = threadPool
 
-        self.threadpool.setExpiryTimeout(300000)
+        self.threadPool.setExpiryTimeout(300000)
         self.mutexServerUp = PyQt5.QtCore.QMutex()
 
         self.timerServerUp = PyQt5.QtCore.QTimer()
@@ -193,7 +193,7 @@ class Client(indibase.indiBase.Client):
         worker.signals.finished.connect(self.clearCycleCheckServerUp)
         worker.signals.result.connect(self.checkServerUpResult)
         worker.signals.error.connect(self.errorCycleCheckServerUp)
-        self.threadpool.start(worker)
+        self.threadPool.start(worker)
 
     def startTimers(self):
         """
