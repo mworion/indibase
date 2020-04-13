@@ -100,9 +100,9 @@ class Client(indibase.indiBase.Client):
     logger = logging.getLogger(__name__)
 
     # socket timeout for testing if server is present
-    SOCKET_TIMEOUT = 5
+    SOCKET_TIMEOUT = 1
     # cycle timer for checking server up
-    CYCLE_SERVER_UP = 5500
+    CYCLE_SERVER_UP = 5000
 
     def __init__(self,
                  host=None,
@@ -130,12 +130,12 @@ class Client(indibase.indiBase.Client):
         try:
             client.connect(self.host)
         except Exception:
-            client.close()
             suc = False
         else:
+            suc = True
+        finally:
             client.shutdown(socket.SHUT_RDWR)
             client.close()
-            suc = True
 
         return suc
 

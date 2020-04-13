@@ -429,7 +429,7 @@ class Client(PyQt5.QtCore.QObject):
 
         :return: nothing
         """
-
+        self.connected = False
         self.log.warning('INDI client disconnected')
 
     def isServerConnected(self):
