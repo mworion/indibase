@@ -275,7 +275,7 @@ class Client(PyQt5.QtCore.QObject):
     DEFAULT_PORT = 7624
 
     # timeout for client to server
-    CONNECTION_TIMEOUT = 1000
+    CONNECTION_TIMEOUT = 3000
 
     def __init__(self,
                  host=None,

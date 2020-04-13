@@ -106,10 +106,15 @@ class Client(indibase.indiBase.Client):
 
     def __init__(self,
                  host=None,
+                 threadPool=None
                  ):
         super().__init__(host=host)
 
-        self.threadpool = PyQt5.QtCore.QThreadPool()
+        if threadPool is None:
+            self.threadPool = PyQt5.QtCore.QThreadPool()
+        else:
+            self.threadPool = threadPool
+
         self.threadpool.setExpiryTimeout(300000)
         self.mutexServerUp = PyQt5.QtCore.QMutex()
 
