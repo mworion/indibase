@@ -429,7 +429,7 @@ class Client(PyQt5.QtCore.QObject):
 
         :return: nothing
         """
-        self.connected = False
+        self.disconnectServer()
         self.log.warning('INDI client disconnected')
 
     def isServerConnected(self):
@@ -1074,4 +1074,3 @@ class Client(PyQt5.QtCore.QObject):
         if not self.connected:
             return
         self.log.error('INDI client connection fault, error: {0}'.format(socketError))
-        self.disconnectServer()
