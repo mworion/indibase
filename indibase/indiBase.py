@@ -416,10 +416,10 @@ class Client(PyQt5.QtCore.QObject):
         """
 
         self.connected = False
-        self.signals.serverDisconnected.emit(self.devices)
         self.clearParser()
+        self.signals.serverDisconnected.emit(self.devices)
         self.clearDevices(deviceName)
-        self.socket.close()
+        self.socket.abort()
 
         return True
 
