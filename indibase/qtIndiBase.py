@@ -187,8 +187,12 @@ class Client(indibase.indiBase.Client):
         :return: nothing
         """
 
+        if host is None:
+            return False
+
         if not self.mutexServerUp.tryLock():
             return
+
         worker = Worker(self.checkServerUp)
         worker.signals.finished.connect(self.clearCycleCheckServerUp)
         worker.signals.result.connect(self.checkServerUpResult)
