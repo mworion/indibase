@@ -187,7 +187,7 @@ class Client(indibase.indiBase.Client):
         :return: nothing
         """
 
-        if host is None:
+        if self.host is None:
             return False
 
         if not self.mutexServerUp.tryLock():
