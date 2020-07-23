@@ -458,9 +458,17 @@ class Client(PyQt5.QtCore.QObject):
             return False
         if not deviceName:
             return False
+        if deviceName not in self.devices:
+            return False
+        con = self.devices[deviceName].getSwitch('CONNECTION')
+        if con['CONNECT'] == 'On':
+            self.log.warning(f'{deviceName} already connected')
+            return False
         suc = self.sendNewSwitch(deviceName=deviceName,
                                  propertyName='CONNECTION',
-                                 elements='CONNECT',
+                                 elements={'CONNECT': 'On',
+                                           'DISCONNECT': 'Off'
+                                           },
                                  )
         return suc
 
@@ -480,9 +488,15 @@ class Client(PyQt5.QtCore.QObject):
             return False
         if deviceName not in self.devices:
             return False
+        con = self.devices[deviceName].getSwitch('CONNECTION')
+        if con['DISCONNECT'] == 'On':
+            self.log.warning(f'{deviceName} already disconnected')
+            return False
         suc = self.sendNewSwitch(deviceName=deviceName,
                                  propertyName='CONNECTION',
-                                 elements='DISCONNECT',
+                                 elements={'CONNECT': 'Off',
+                                           'DISCONNECT': 'On'
+                                           },
                                  )
         return suc
 
