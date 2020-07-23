@@ -93,6 +93,7 @@ class Device(object):
         super().__init__()
 
         self.name = name
+        self.connected = False
 
     def getNumber(self, propertyName):
         """
@@ -450,6 +451,8 @@ class Client(PyQt5.QtCore.QObject):
         :param deviceName: name string of INDI device
         :return: success
         """
+        
+        # todo: do connected state for each device
 
         if not self.connected:
             return False
@@ -468,6 +471,8 @@ class Client(PyQt5.QtCore.QObject):
         :param deviceName: name string of INDI device
         :return: success
         """
+
+        # todo: do connected state for each device
 
         if not self.connected:
             return False
@@ -722,6 +727,7 @@ class Client(PyQt5.QtCore.QObject):
         """
 
         if self.connected:
+            self.log.debug(f'SendCmd: [{indiCommand}]')
             number = self.socket.write(indiCommand.toXML() + b'\n')
             self.socket.flush()
             if number > 0:
