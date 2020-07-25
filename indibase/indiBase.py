@@ -820,10 +820,10 @@ class Client(PyQt5.QtCore.QObject):
             # send connected signals
             if name == 'CONNECT' and elt.getValue() == 'On' and chunk.attr['state'] == 'Ok':
                 self.signals.deviceConnected.emit(deviceName)
-                self.log.warning('Device {0} connected'.format(deviceName))
+                self.log.warning(f'Device [{deviceName}] connected')
             if name == 'DISCONNECT' and elt.getValue() == 'On':
                 self.signals.deviceDisconnected.emit(deviceName)
-                self.log.warning('Device {0} disconnected'.format(deviceName))
+                self.log.warning(f'Device [{deviceName}] disconnected')
 
         return True
 
