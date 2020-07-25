@@ -116,7 +116,7 @@ class Device(object):
         retDict = {}
         for prop in elementList:
             retDict[prop] = elementList[prop]['value']
-        self.log.info(f'Get number [{self.name}]: {retDict}')
+        # self.log.info(f'Get number [{self.name}]: {retDict}')
         return retDict
 
     def getText(self, propertyName):
@@ -140,7 +140,7 @@ class Device(object):
         retDict = {}
         for prop in elementList:
             retDict[prop] = elementList[prop]['value']
-        self.log.info(f'Get text   [{self.name}]: {retDict}')
+        # self.log.info(f'Get text   [{self.name}]: {retDict}')
         return retDict
 
     def getSwitch(self, propertyName):
@@ -164,7 +164,7 @@ class Device(object):
         retDict = {}
         for prop in elementList:
             retDict[prop] = elementList[prop]['value']
-        self.log.info(f'Get switch [{self.name}]: {retDict}')
+        # self.log.info(f'Get switch [{self.name}]: {retDict}')
         return retDict
 
     def getLight(self, propertyName):
@@ -188,7 +188,7 @@ class Device(object):
         retDict = {}
         for prop in elementList:
             retDict[prop] = elementList[prop]['value']
-        self.log.info(f'Get light  [{self.name}]: {retDict}')
+        # self.log.info(f'Get light  [{self.name}]: {retDict}')
         return retDict
 
     def getBlob(self, propertyName):
@@ -209,7 +209,7 @@ class Device(object):
             self.log.error('Property: {0} is not Blob'.format(iProperty['propertyType']))
             return
         elementList = iProperty['elementList']
-        self.log.info(f'Get blob   [{self.name}]')
+        # self.log.info(f'Get blob   [{self.name}]')
         return elementList[propertyName]
 
 
@@ -403,7 +403,7 @@ class Client(PyQt5.QtCore.QObject):
                 continue
             self.signals.removeDevice.emit(device)
             # self.signals.deviceDisconnected.emit(device)
-            self.log.warning('Remove device {0}'.format(device))
+            self.log.warning(f'Remove device [{device}]')
         self.devices = {}
         return True
 
@@ -460,10 +460,14 @@ class Client(PyQt5.QtCore.QObject):
             return False
         if deviceName not in self.devices:
             return False
+
         con = self.devices[deviceName].getSwitch('CONNECTION')
-        if con['CONNECT'] == 'On':
-            self.log.warning(f'{deviceName} already connected')
+        if con['CONNECT']:
+            self.log.warning(f'Device [{deviceName}] already connected - no connect necessary')
             return False
+        else:
+            self.log.warning(f'Device [{deviceName}] unconnected - connect it now')
+
         suc = self.sendNewSwitch(deviceName=deviceName,
                                  propertyName='CONNECTION',
                                  elements={'CONNECT': 'On',
@@ -488,10 +492,12 @@ class Client(PyQt5.QtCore.QObject):
             return False
         if deviceName not in self.devices:
             return False
+
         con = self.devices[deviceName].getSwitch('CONNECTION')
         if con['DISCONNECT'] == 'On':
             self.log.warning(f'{deviceName} already disconnected')
             return False
+
         suc = self.sendNewSwitch(deviceName=deviceName,
                                  propertyName='CONNECTION',
                                  elements={'CONNECT': 'Off',
@@ -741,8 +747,9 @@ class Client(PyQt5.QtCore.QObject):
         """
 
         if self.connected:
-            self.log.debug(f'SendCmd: [{indiCommand}]')
-            number = self.socket.write(indiCommand.toXML() + b'\n')
+            cmd = indiCommand.toXML()
+            self.log.debug(f'SendCmd: [{cmd}]')
+            number = self.socket.write(cmd + b'\n')
             self.socket.flush()
             if number > 0:
                 return True
@@ -810,12 +817,8 @@ class Client(PyQt5.QtCore.QObject):
             for attr in elt.attr:
                 elementList[name][attr] = elt.attr[attr]
 
-            # if we don't set values, no connection signals
-            if defVector:
-                continue
-
             # send connected signals
-            if name == 'CONNECT' and elt.getValue() == 'On':
+            if name == 'CONNECT' and elt.getValue() == 'On' and chunk.attr['state'] == 'Ok':
                 self.signals.deviceConnected.emit(deviceName)
                 self.log.warning('Device {0} connected'.format(deviceName))
             if name == 'DISCONNECT' and elt.getValue() == 'On':
@@ -864,7 +867,7 @@ class Client(PyQt5.QtCore.QObject):
         if deviceName not in self.devices:
             self.devices[deviceName] = Device(deviceName)
             self.signals.newDevice.emit(deviceName)
-            self.log.warning('New device {0}'.format(deviceName))
+            self.log.warning(f'New device [{deviceName}]')
 
         device = self.devices[deviceName]
         return device, deviceName
@@ -887,7 +890,7 @@ class Client(PyQt5.QtCore.QObject):
         if hasattr(device, iProperty):
             delattr(device, iProperty)
             self.signals.removeProperty.emit(deviceName, iProperty)
-            self.log.warning('New device [{0}] property {1}'.format(deviceName, iProperty))
+            self.log.warning(f'Device [{deviceName}] del property [{iProperty}]')
         return True
 
     def _setProperty(self, chunk=None, device=None, deviceName=None):
