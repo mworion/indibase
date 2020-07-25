@@ -463,7 +463,7 @@ class Client(PyQt5.QtCore.QObject):
 
         con = self.devices[deviceName].getSwitch('CONNECTION')
         if con['CONNECT']:
-            self.log.warning(f'Device [{deviceName}] already connected - no connect necessary')
+            self.log.warning(f'Device [{deviceName}] was connected at startup')
             return False
         else:
             self.log.warning(f'Device [{deviceName}] unconnected - connect it now')
@@ -748,7 +748,7 @@ class Client(PyQt5.QtCore.QObject):
 
         if self.connected:
             cmd = indiCommand.toXML()
-            self.log.debug(f'SendCmd: [{cmd}]')
+            self.log.debug(f"SendCmd: [{cmd.decode().lstrip('<').rstrip('/>')}]")
             number = self.socket.write(cmd + b'\n')
             self.socket.flush()
             if number > 0:
