@@ -988,8 +988,7 @@ class Client(PyQt5.QtCore.QObject):
         :param chunk: raw indi XML element
         :return: success if it could be parsed
         """
-
-        self.log.debug('INDI XML chunk: {0}'.format(chunk))
+        self.log.debug(f'RecvCmd: [{chunk}]')
         if not self.connected:
             return False
 
