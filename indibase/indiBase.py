@@ -799,19 +799,7 @@ class Client(PyQt5.QtCore.QObject):
 
             # as a new blob vector does not  contain an initial value, we have to separate this
             if not isinstance(elt, indiXML.DefBLOB):
-
-                if elt.etype in ['defNumber',
-                                 'setNumber',
-                                 'oneNumber']:
-                    elementList[name]['value'] = float(elt.getValue())
-
-                elif elt.etype in ['defSwitch',
-                                   'oneSwitch',
-                                   'setSwitch']:
-                    elementList[name]['value'] = (elt.getValue() == 'On')
-
-                else:
-                    elementList[name]['value'] = elt.getValue()
+                elementList[name]['value'] = elt.getValue()
 
             # now all other attributes of element are stored
             for attr in elt.attr:
