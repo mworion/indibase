@@ -462,7 +462,7 @@ class Client(PyQt5.QtCore.QObject):
             return False
 
         con = self.devices[deviceName].getSwitch('CONNECTION')
-        if con['CONNECT']:
+        if con['CONNECT'] == 'On':
             self.log.warning(f'Device [{deviceName}] was connected at startup')
             return False
         else:
